@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Enrolled Students List</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Roll Number</th>
+            </tr>
+        </thead>
+        <tbody id="student-list">
+            <!-- Enrolled students list will be populated here -->
+        </tbody>
+    </table>
+
+    <h2>Students Present Today</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Check In Time</th>
+                <th>Check Out Time</th>
+                <th>Classroom Time</th>
+            </tr>
+        </thead>
+        <tbody id="present-student-list">
+            <!-- Present students list will be populated here -->
+        </tbody>
+    </table>
+
+    <!-- Existing HTML code remains the same -->
+    <script>
+        // Fetch the enrolled student data from Google Apps Script
+        fetch('https://script.google.com/macros/s/AKfycbzEC8M0Sx5lRvs5wDzfWDVzJEioI36WQfIXdrQUhQ-3C6vfR9A8rUJX-q5ASqXH4BRv/exec?action=getAllStudents')
+            .then(response => response.json())
+            .then(data => {
+                const studentList = document.getElementById('student-list');
+                data.forEach(student => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${student.name}</td><td>${student.rollNumber}</td>`;
+                    studentList.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching enrolled students:', error));
+
+        // Fetch the present student data from Google Apps Script
+        fetch('https://script.google.com/macros/s/AKfycbzEC8M0Sx5lRvs5wDzfWDVzJEioI36WQfIXdrQUhQ-3C6vfR9A8rUJX-q5ASqXH4BRv/exec?action=getPresentStudents')
+            .then(response => response.json())
+            .then(data => {
+                const presentStudentList = document.getElementById('present-student-list');
+
+                data.forEach(student => {
+                    const row = document.createElement('tr');
+
+                    let checkOutTime = student.checkOut ? student.checkOut : 'Not checked out';
+                    let totalTime = student.totalTime ? student.totalTime : 'N/A';
+
+                    row.innerHTML = `
+                <td>${student.name}</td>
+                <td>${student.checkIn}</td>
+                <td>${checkOutTime}</td>
+                <td>${totalTime}</td>
+              `;
+
+                    presentStudentList.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching present students:', error));
+    </script>
+
+</body>
+
+</html>
