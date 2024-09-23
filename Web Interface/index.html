@@ -45,6 +45,8 @@
             <tr>
                 <th>Name</th>
                 <th>Roll Number</th>
+                <th>Total Present</th>
+                <th>Total Classroom Time</th>
             </tr>
         </thead>
         <tbody id="student-list">
@@ -70,20 +72,20 @@
     <!-- Existing HTML code remains the same -->
     <script>
         // Fetch the enrolled student data from Google Apps Script
-        fetch('https://script.google.com/macros/s/AKfycbzEC8M0Sx5lRvs5wDzfWDVzJEioI36WQfIXdrQUhQ-3C6vfR9A8rUJX-q5ASqXH4BRv/exec?action=getAllStudents')
+        fetch('https://script.google.com/macros/s/AKfycbyRVHamgUyNMkpzukgtTCv7ZZxk4UHHXxj7c8SLUrw0OFzvxBnbHhj8vllCw25zvN4/exec?action=getAllStudents')
             .then(response => response.json())
             .then(data => {
                 const studentList = document.getElementById('student-list');
                 data.forEach(student => {
                     const row = document.createElement('tr');
-                    row.innerHTML = `<td>${student.name}</td><td>${student.rollNumber}</td>`;
+                    row.innerHTML = `<td>${student.name}</td><td>${student.rollNumber}</td><td>${student.totalPresent}</td><td>${student.totalTime}</td>`;
                     studentList.appendChild(row);
                 });
             })
             .catch(error => console.error('Error fetching enrolled students:', error));
 
         // Fetch the present student data from Google Apps Script
-        fetch('https://script.google.com/macros/s/AKfycbzEC8M0Sx5lRvs5wDzfWDVzJEioI36WQfIXdrQUhQ-3C6vfR9A8rUJX-q5ASqXH4BRv/exec?action=getPresentStudents')
+        fetch('https://script.google.com/macros/s/AKfycbyRVHamgUyNMkpzukgtTCv7ZZxk4UHHXxj7c8SLUrw0OFzvxBnbHhj8vllCw25zvN4/exec?action=getPresentStudents')
             .then(response => response.json())
             .then(data => {
                 const presentStudentList = document.getElementById('present-student-list');
@@ -110,3 +112,4 @@
 </body>
 
 </html>
+
