@@ -78,7 +78,7 @@
                 const studentList = document.getElementById('student-list');
                 data.forEach(student => {
                     const row = document.createElement('tr');
-                    row.innerHTML = `<td>${student.name}</td><td>${student.rollNumber}</td><td>${student.totalPresent}</td><td>${student.totalTime}</td>`;
+                    row.innerHTML = `<td>${student.name}</td><td>${student.fingerprintID}</td><td>${student.totalPresent}</td><td>${student.totalTime}</td>`;
                     studentList.appendChild(row);
                 });
             })
