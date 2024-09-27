@@ -16,10 +16,13 @@
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
 // Replace with your network credentials
-const char *ssid = "InnovationLab";
-const char *password = "productDesignLab";
+const char *ssid = "ECB_TEQIP";
+const char *password = "";
+// IPAddress local_IP(192, 168, 10, 201); // Set this to your desired static IP
+// IPAddress gateway(192, 168, 10, 1);    // Set this to your network gateway (usually the router's IP)
+// IPAddress subnet(255, 255, 255, 0);   // Subnet mask
 
-const char *serverName = "https://script.google.com/macros/s/AKfycbwkQNEz_8IAdEPBo4HB2rGiDdoQ0vTLCzDkqk4ciKwqsafE2CLaLy6V2LPIUvojR7kB/exec"; // Replace with your server URL
+const char *serverName = "https://script.google.com/macros/s/AKfycbwr-mnkA4O2VGBSEqi6Db82YiANQcDEcESMVwoc3eAMDWXg5q1QFOzoXwXiXXquTJNp/exec"; // Replace with your server URL
 
 // Create an instance of the server
 ESP8266WebServer server(80);
@@ -218,7 +221,7 @@ void handleRoot()
   String html = "<html><body>";
   html += "<h1>Fingerprint Sensor Interface</h1>";
   html += "<p><a href=\"/enroll\">Enroll Fingerprint</a></p>";
-  html += "<p><a href=\"/check\">Check Fingerprint</a></p>";
+  // html += "<p><a href=\"/check\">Check Fingerprint</a></p>";
   html += "</body></html>";
   server.send(200, "text/html", html);
 }
@@ -666,6 +669,7 @@ void setup()
   WiFi.setAutoReconnect(true);
 
   // Connect to WiFi
+  // WiFi.config(local_IP, gateway, subnet);
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi...");
   print("", "Connecting WiFi");
@@ -856,88 +860,3 @@ void loop()
     print("   Welcome to    ", " Innovation Lab ");
   }
 }
-
-// uint8_t getFingerprintEnro(uint8_t id)
-// {
-//   int p = -1;
-//   Serial.print("Waiting for valid finger to enroll as #");
-//   Serial.println(id);
-//   while (p != FINGERPRINT_OK)
-//   {
-//     p = finger.getImage();
-//     Serial.print("R1 : ");
-//     Serial.println(returnedData(p));
-//   }
-
-//   p = finger.image2Tz(1);
-
-//   if (returnedData(p) != true)
-//   {
-//     int i = 1;
-//     while (p != FINGERPRINT_OK && i <= 5)
-//     {
-//       p = finger.getImage();
-//       p = finger.image2Tz(1);
-//       i++;
-//       print("ERROR", "Wait a movement");
-//       delay(500);
-//     }
-//     if (i >= 5)
-//       return false;
-//   }
-//   if (p == FINGERPRINT_OK)
-//   {
-//     Serial.println("Stored!");
-//     // print("Fingerprint     ", "Stored           ");
-//     // delay(800);
-//   }
-
-//   Serial.println("Remove finger");
-//   print(" Remove Finger", "");
-//   delay(2000);
-//   p = 0;
-//   while (p != FINGERPRINT_NOFINGER)
-//   {
-//     p = finger.getImage();
-//   }
-//   Serial.print("ID ");
-//   Serial.println(id);
-//   p = -1;
-//   Serial.println("Place same finger again");
-//   print("Place same", "finger again");
-//   delay(1000);
-//   while (p != FINGERPRINT_OK)
-//   {
-//     Serial.println("r4");
-//     p = finger.getImage();
-//     returnedData(p);
-//   }
-
-//   p = finger.image2Tz(2);
-
-//   if (p == FINGERPRINT_OK)
-//   {
-//     Serial.println("Image converted");
-//     print("ID Stored        ", "Successfully     ");
-//   }
-//   else if (returnedData(p) != true)
-//     return p;
-
-//   Serial.print("Creating model for #");
-//   Serial.println(id);
-//   p = finger.createModel();
-
-//   if (p == FINGERPRINT_OK)
-//     Serial.println("Prints matched!");
-//   else if (returnedData(p) != true)
-//     return p;
-
-//   Serial.print("ID ");
-//   Serial.println(id);
-//   p = finger.storeModel(id);
-//   if (p == FINGERPRINT_OK)
-//     Serial.println("Stored!2");
-//   if (returnedData(p) != true)
-//     return p;
-//   return true;
-// }

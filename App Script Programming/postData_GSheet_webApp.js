@@ -1,4 +1,4 @@
-//version: 123, 142, 144, 149, 154, 154
+//version: 123, 142, 144, 149, 154, 154, 155
 
 function doPost(e) {
     var action = e.parameter.action;
@@ -15,9 +15,9 @@ function doPost(e) {
 function deleteAllData() {
     var sheet = SpreadsheetApp.openById('1nuQf-qE9Zr9IJDfidnysI4iVaYjGjy_HETrkIcB3Vc8').getActiveSheet();
 
-    var range = sheet.getRange(1, 2, 2, sheet.getLastColumn());
+    var range = sheet.getRange(1, 2, 3, sheet.getLastColumn());
     range.clearContent();
-    var range = sheet.getRange(3, 1, sheet.getLastRow(), sheet.getLastColumn());
+    var range = sheet.getRange(4, 1, sheet.getLastRow(), sheet.getLastColumn());
     range.clearContent();
 
     var result = {
