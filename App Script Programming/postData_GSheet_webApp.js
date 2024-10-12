@@ -1,19 +1,25 @@
-//version: 123, 142, 144, 149, 154, 154, 155
+//version: 123, 142, 144, 149, 154, 154, 155, 156, 157
 
 function doPost(e) {
     var action = e.parameter.action;
 
     if (action === 'enroll') {
-        return enrollStudent(e.parameter.name, e.parameter.rollNumber);
+        return enrollStudent(e.parameter.name, e.parameter.rollNumber, e.parameter.subject);
     } else if (action === 'markAttendance') {
-        return markAttendance(e.parameter.rollNumber, e.parameter.timeType);
+        return markAttendance(e.parameter.rollNumber, e.parameter.timeType, e.parameter.subject);
     } else if (action === 'reset') {
-        return deleteAllData();
+        return deleteAllData(e.parameter.subject);
     }
 }
 
-function deleteAllData() {
-    var sheet = SpreadsheetApp.openById('1nuQf-qE9Zr9IJDfidnysI4iVaYjGjy_HETrkIcB3Vc8').getActiveSheet();
+function teacher(subject){
+    var sheet = SpreadsheetApp.openById('1nuQf-qE9Zr9IJDfidnysI4iVaYjGjy_HETrkIcB3Vc8').getSheetByName(subject);
+    var range = sheet.getRange(1, 2, 3, 3);
+    range.clearContent();
+}
+
+function deleteAllData(subject) {
+    var sheet = SpreadsheetApp.openById('1nuQf-qE9Zr9IJDfidnysI4iVaYjGjy_HETrkIcB3Vc8').getSheetByName(subject);
 
     var range = sheet.getRange(1, 2, 3, sheet.getLastColumn());
     range.clearContent();
@@ -21,17 +27,18 @@ function deleteAllData() {
     range.clearContent();
 
     var result = {
+        "subject": subject,
         "status": "Sheet data ",
-        "name": "deleted",
+        "name": "deleted"
     };
 
     return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
 }
 
 
-function enrollStudent(name, rollNumber) {
+function enrollStudent(name, rollNumber, subject) {
     var status = "";
-    var sheet = SpreadsheetApp.openById('1nuQf-qE9Zr9IJDfidnysI4iVaYjGjy_HETrkIcB3Vc8').getActiveSheet();
+    var sheet = SpreadsheetApp.openById('1nuQf-qE9Zr9IJDfidnysI4iVaYjGjy_HETrkIcB3Vc8').getSheetByName(subject);
     var lastColumn = sheet.getLastColumn() + 1; // Move to the next empty column
 
     // Set name, roll number, and headers for check-in and check-out
@@ -44,6 +51,7 @@ function enrollStudent(name, rollNumber) {
 
     status = "successfully";
     var result = {
+        "subject": subject,
         "status": status,
         "Name": name,
     };
@@ -96,8 +104,8 @@ function formatDate(value) {
     return formattedDate;
 }
 
-function markAttendance(rollNumber, timeType) {
-    var sheet = SpreadsheetApp.openById('1nuQf-qE9Zr9IJDfidnysI4iVaYjGjy_HETrkIcB3Vc8').getActiveSheet();
+function markAttendance(rollNumber, timeType, subject) {
+    var sheet = SpreadsheetApp.openById('1nuQf-qE9Zr9IJDfidnysI4iVaYjGjy_HETrkIcB3Vc8').getSheetByName(subject);
     var data = sheet.getRange(1, 1, 2, sheet.getLastColumn()).getValues(); // Get the first two rows
     var rollNumbers = data[1]; // Second row
     var studentNames = data[0]; // First row
@@ -115,6 +123,14 @@ function markAttendance(rollNumber, timeType) {
     if (!dateColumn) {
         dateColumn = lastRow + 1;
         sheet.getRange(dateColumn, 1).setValue(formattedDate);
+    }
+    
+    //
+    if(sheet.getRange(lastRow, 3).getValue() != ""){
+        var result = {
+            "Status" : "Class has been completed"
+        };
+        return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
     }
 
     var status;
@@ -156,6 +172,7 @@ function markAttendance(rollNumber, timeType) {
     }
 
     var result = {
+        "subject": subject,
         "name": studentName,
         "date format": formattedDate,
         "Status": status
@@ -163,3 +180,4 @@ function markAttendance(rollNumber, timeType) {
 
     return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
 }
+      

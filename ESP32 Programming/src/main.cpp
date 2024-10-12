@@ -16,8 +16,8 @@
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
 // Replace with your network credentials
-const char *ssid = "ECB_TEQIP";
-const char *password = "";
+const char *ssid = "Innovation_IIC";
+const char *password = "productDesignLab";
 // IPAddress local_IP(192, 168, 10, 201); // Set this to your desired static IP
 // IPAddress gateway(192, 168, 10, 1);    // Set this to your network gateway (usually the router's IP)
 // IPAddress subnet(255, 255, 255, 0);   // Subnet mask
@@ -219,9 +219,9 @@ void resetData()
 void handleRoot()
 {
   String html = "<html><body>";
-  html += "<h1>Fingerprint Sensor Interface</h1>";
-  html += "<p><a href=\"/enroll\">Enroll Fingerprint</a></p>";
-  // html += "<p><a href=\"/check\">Check Fingerprint</a></p>";
+  html += "<h1>Enroll in your class</h1>";
+  html += "<p><a href=\"/enroll\">Enroll as Student</a></p>";
+  html += "<p><a href=\"/check\">Entoll as Teacher</a></p>";
   html += "</body></html>";
   server.send(200, "text/html", html);
 }
@@ -244,9 +244,14 @@ void handleEnroll()
 // Function to handle fingerprint checking
 void handleCheck()
 {
-  // Implement fingerprint checking logic
-  // Placeholder response
-  server.send(200, "text/html", "<html><body>Check Fingerprint Functionality</body></html>");
+  String html = "<html><body>";
+  html += "<h1>Enroll Fingerprint</h1>";
+  html += "<form action=\"/submit\" method=\"POST\">";
+  html += "Name: <input type=\"text\" name=\"name\"><br>";
+  html += "<input type=\"submit\" value=\"Submit\">";
+  html += "</form>";
+  html += "</body></html>";
+  server.send(200, "text/html", html);
 }
 
 void saveFingerprintID(int id)
@@ -507,12 +512,12 @@ void handleSubmit()
       saveFingerprintID(id);
 
       // Respond with a JavaScript to redirect to Google if enrollment is successful
-      String html = "<html><body>";
-      html += "<script>";
-      html += "window.location.href = 'https://forms.gle/ySQDpGSoJ5gQ9E776';";
-      html += "</script>";
-      html += "</body></html>";
-      server.send(200, "text/html", html);
+      // String html = "<html><body>";
+      // html += "<script>";
+      // html += "window.location.href = 'https://forms.gle/ySQDpGSoJ5gQ9E776';";
+      // html += "</script>";
+      // html += "</body></html>";
+      // server.send(200, "text/html", html);
     }
     else
     {
