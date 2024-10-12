@@ -39,7 +39,27 @@
 </head>
 
 <body>
-    <h1>Enrolled Students List</h1>
+    <!-- <h2>Control ESP8266 LED</h2>
+
+    <button onclick="controlLED('on')">Turn On LED</button>
+    <button onclick="controlLED('off')">Turn Off LED</button>
+
+    <p id="status"></p>
+
+    <script>
+        const esp8266_ip = 'http://192.168.10.201';  // ESP8266 static IP
+
+        function controlLED(state) {
+            fetch(`${esp8266_ip}/led/${state}`)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('status').innerText = data;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script> -->
+
+    <h1>Teacher & Enrolled Students List</h1>
     <table>
         <thead>
             <tr>
@@ -54,7 +74,7 @@
         </tbody>
     </table>
 
-    <h2>Students Present Today</h2>
+    <h2>Today's Attendance</h2>
     <table>
         <thead>
             <tr>
@@ -112,4 +132,3 @@
 </body>
 
 </html>
-
