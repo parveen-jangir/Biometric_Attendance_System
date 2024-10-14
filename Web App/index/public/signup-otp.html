@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Cdn -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"> -->
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script> -->
+
+</head>
+
+<body>
+    <div class="app-main">
+        <div class="main-body">
+            <div class="container">
+                <div class="login">
+                    <!-- <div class="login-header"></div> -->
+                    <div class="login-wrapper">
+                        <div class="login-body">
+                            <div class="login-title">
+                                <h1>Otp Verification</h1>
+                            </div>
+                            <div class="alert-messages"></div>
+                            <form class="otp-signup-form" action="">
+                                <div class="form-group">
+                                    <!-- <label for="otp-email-address">Email Address</label> -->
+                                    <input type="email" id="otp-email-address" name="" value="example@gmail.com"
+                                        placeholder="Enter Email"
+                                        style="color: #727171; cursor: not-allowed; pointer-events: none;">
+                                </div>
+                                <div class="form-group">
+                                    <!-- <label for="otp-code">Otp</label> -->
+                                    <input type="number" id="otp-code" name="" placeholder="Enter Verification Code">
+                                </div>
+
+                                <button class="login-btn" type="submit">
+                                    <span class="btn-text">Sign Up</span>
+                                    <div class="loader">
+                                        <div class="loading">
+                                            <span class="rect1"></span>
+                                            <span class="rect2"></span>
+                                            <span class="rect3"></span>
+                                            <span class="rect4"></span>
+                                            <span class="rect5"></span>
+                                        </div>
+                                    </div>
+                                </button>
+                            </form>
+                            <!-- <div class="login-divider">
+                                <span></span>
+                                <span>or</span>
+                                <span></span>
+                            </div> -->
+                            <!-- <div class="google-provider">
+                                <div class="in-google-provider">
+                                    <a href="">
+                                        <img src="" alt="">
+                                        <i class="fa-brands fa-google"></i>
+                                        <h3>Sign In with Google</h3>
+                                    </a>
+                                </div>
+                            </div> -->
+                        </div>
+                        <!-- <div class="login-footer">
+                            <div class="text-light">
+                                Already registered with us?
+                                <a href="login.html">Sign In</a>
+                            </div>
+                        </div> -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <script src='js/script.js'></script> -->
+    <script>
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        const email = getQueryParam("email");
+        if (email) {
+            document.querySelector("#otp-email-address").value = email;
+        }
+        //remember this code
+        // const token = getQueryParam("token");
+
+        const otpSignUpForm = document.querySelector(".otp-signup-form");
+
+        otpSignUpForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            // const email = document.querySelector("#otp-email-address").value.trim();
+            const otp = document.querySelector("#otp-code").value.trim();
+            const next = getQueryParam("next");
+
+            const alertMessage = document.querySelector(".alert-messages");
+            const loader = document.querySelector(".loader");
+            const btnText = document.querySelector(".btn-text");
+
+            if (!otp) return alert("Please enter your otp.");
+
+            try {
+                loader.style.display = "flex";
+                btnText.style.display = "none";
+
+                const response = await fetch("http://127.0.0.1:3000/verify-otp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, otp }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "OTP verification failed.");
+                }
+
+                if (response.ok) {
+                    alertMessage.classList.add("success");
+                    alertMessage.style.display = "block";
+                    alertMessage.innerText = data.message;
+                    window.location.href = next || data.redirect;
+                } else {
+                    btnText.style.display = "block";
+                    loader.style.display = "none";
+                    alertMessage.classList.add("error");
+                    alertMessage.style.display = "block";
+                    alertMessage.innerText = data.error;
+                }
+                loader.style.display = "none";
+                btnText.style.display = "block";
+            } catch (error) {
+                console.error("Error verifying OTP:", error);
+                // alert(error.message);
+                btnText.style.display = "block";
+                loader.style.display = "none";
+                alertMessage.classList.add("error");
+                alertMessage.style.display = "block";
+                alertMessage.innerText = error;
+            }
+        });
+    </script>
+</body>
+
+</html>

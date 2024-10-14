@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Cdn -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"> -->
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script> -->
+
+</head>
+
+<body>
+    <div class="app-main">
+        <div class="main-body">
+            <div class="container">
+                <div class="login">
+                    <!-- <div class="login-header"></div> -->
+                    <div class="login-wrapper">
+                        <div class="login-body">
+                            <div class="login-title">
+                                <h1>Sign Up</h1>
+                            </div>
+                            <div class="alert-messages"></div>
+                            <form class="signup-form" action="">
+                                <div class="form-group">
+                                    <label for="username">Full Name</label>
+                                    <input type="text" id="username" name="" placeholder="Enter Full Name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="email-address">Email Address</label>
+                                    <input type="email" id="email-address" name="" placeholder="Enter Email">
+                                </div>
+                                <div class="form-group">
+                                    <label for="email-password">Password</label>
+                                    <input type="password" id="email-password" name="" placeholder="Enter Password">
+                                </div>
+                                <div class="form-group">
+                                    <label for="email-confirm-password">Confirm Password</label>
+                                    <div class="input-container">
+                                        <div class="password-icon">
+                                            <i class="fa-regular fa-eye"></i>
+                                            <i class="fa-regular fa-eye-slash"></i>
+                                        </div>
+                                        <input type="password" id="email-confirm-password" placeholder="Enter Confirm Password">
+                                    </div>
+                                </div>
+                                <!-- <div class="form-group">
+                                    <a href="">
+                                        <h2>Forget Password?</h2>
+                                    </a>
+                                    <label for="role-page">Role of Sign Up</label>
+                                    <select name="" class="role-page">
+                                        <option value="default" selected>Select the role of Sign Up</option>
+                                        <option value="admin">Admin</option>
+                                        <option value="teacher">Teacher</option>
+                                        <option value="student">Student</option>
+                                    </select>
+                                </div> -->
+                                <button class="login-btn" type="submit">
+                                    <span class="btn-text">Sign Up</span>
+                                    <div class="loader">
+                                        <div class="loading">
+                                            <span class="rect1"></span>
+                                            <span class="rect2"></span>
+                                            <span class="rect3"></span>
+                                            <span class="rect4"></span>
+                                            <span class="rect5"></span>
+                                        </div>
+                                    </div>
+                                </button>
+                            </form>
+                            <div class="login-divider">
+                                <span></span>
+                                <span>or</span>
+                                <span></span>
+                            </div>
+                            <div class="google-provider">
+                                <div class="in-google-provider">
+                                    <a href="">
+                                        <!-- <img src="" alt=""> -->
+                                        <i class="fa-brands fa-google"></i>
+                                        <h3>Sign In with Google</h3>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="login-footer">
+                            <div class="text-light">
+                                Already registered with us?
+                                <a href="login.html">Sign In</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src='js/script.js'></script>
+    <script src='js/signup.js'></script>
+    
+
+    <!-- <script>
+        // async function hell() {
+        //     const { data } = await supabase.auth.getUser()
+        //     console.log(data)
+        // }
+        // hell();
+        const googleProvider = document.querySelector(".in-google-provider");
+        if (googleProvider) {
+            googleProvider.addEventListener("click", async (e) => {
+                e.preventDefault();
+
+                const alertMessage = document.querySelector(".alert-messages");
+
+                let { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: "google",
+                    options: {
+                        scopes: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email openid',
+                        redirectTo: "http://127.0.0.1:5500/Web%20Interface/index/index.html",
+                    },
+                });
+
+                if (error) {
+                    alertMessage.classList.add("error");
+                    alertMessage.style.display = "block";
+                    alertMessage.innerText = `Google Error : ${error.message}`;
+                } else {
+                    console.log("Signed in:", data);
+                }
+            });
+        }
+
+    </script> -->
+
+
+</body>
+
+</html>
