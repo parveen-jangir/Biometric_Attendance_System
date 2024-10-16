@@ -16,6 +16,8 @@ const JWT_SECRET =
   process.env.JWT_SECRET || crypto.randomBytes(32).toString("hex");
 
 const TOKEN_EXPIRATION = "60m"; // 15 minutes expiration
+const PORT = 3000;
+const IP_ADDRESS = '20.198.48.206';
 
 app.use(helmet()); // Add security headers
 app.use(cors()); // Enable CORS for all routes
@@ -25,7 +27,7 @@ let tokenStore = [];
 console.log(JWT_SECRET);
 
 const db = mysql.createConnection({
-  host: "localhost",
+  host: "20.198.48.206",
   user: "root", // Your MySQL username
   password: "password", // Your MySQL password
   database: "biomatric_userdb", // Replace with your database name
@@ -277,6 +279,7 @@ app.post("/forget-password", (req, res) => {
       });
     }
 
+
     tokenStore = tokenStore.filter((el) => el.email !== email);
 
     const resetToken = jwt.sign({ email }, JWT_SECRET, {
@@ -287,7 +290,7 @@ app.post("/forget-password", (req, res) => {
 
     
     // Send the reset link via email (you’ll need to set up SMTP)
-    const resetLink = `http://127.0.0.1:5500/Web%20Interface/index/public/confirmnewpassword.html?token=${resetToken}`;
+    const resetLink = `http://20.198.48.206:3000/Web%20App/index/public/confirmnewpassword.html?token=${resetToken}`;
 
 
     // Log the start and end time of the token
@@ -328,6 +331,14 @@ app.post("/forget-password", (req, res) => {
 app.post("/reset-password", async (req, res) => {
   const { token, newPassword } = req.body;
 
+  const tokenExists = tokenStore.find((t) => t.resetToken === token);
+
+
+  if(!tokenExists){
+    return res.status(400).json({ error: "Invalid or expired token." });
+  }
+
+  
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     console.log("Updating password for:", decoded);
@@ -352,6 +363,6 @@ app.post("/reset-password", async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server running on http://127.0.0.1:3000");
+app.listen(PORT, () => {
+  console.log(`Server running on http://${IP_ADDRESS}:${PORT}`);
 });
