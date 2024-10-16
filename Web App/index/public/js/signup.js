@@ -16,7 +16,7 @@ signUpForm.addEventListener("submit", async function (e) {
   try {
     loader.style.display = "flex";
     btnText.style.display = "none";
-    const response = await fetch("http://127.0.0.1:3000/generate-otp", {
+    const response = await fetch("http://20.198.48.206:3000/generate-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userName, email, password }),
