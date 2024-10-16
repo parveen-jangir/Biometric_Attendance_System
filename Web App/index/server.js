@@ -277,6 +277,7 @@ app.post("/forget-password", (req, res) => {
       });
     }
 
+
     tokenStore = tokenStore.filter((el) => el.email !== email);
 
     const resetToken = jwt.sign({ email }, JWT_SECRET, {
@@ -328,6 +329,14 @@ app.post("/forget-password", (req, res) => {
 app.post("/reset-password", async (req, res) => {
   const { token, newPassword } = req.body;
 
+  const tokenExists = tokenStore.find((t) => t.resetToken === token);
+
+
+  if(!tokenExists){
+    return res.status(400).json({ error: "Invalid or expired token." });
+  }
+
+  
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     console.log("Updating password for:", decoded);
