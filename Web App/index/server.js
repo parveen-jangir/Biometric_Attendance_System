@@ -27,9 +27,9 @@ let tokenStore = [];
 console.log(JWT_SECRET);
 
 const db = mysql.createConnection({
-  host: "20.198.48.206",
+  host: "localhost",
   user: "root", // Your MySQL username
-  password: "password", // Your MySQL password
+  password: "YourStr0ngP@ssw0rd!", // Your MySQL password
   database: "biomatric_userdb", // Replace with your database name
 });
 
@@ -290,7 +290,8 @@ app.post("/forget-password", (req, res) => {
 
     
     // Send the reset link via email (you’ll need to set up SMTP)
-    const resetLink = `http://20.198.48.206:3000/Web%20App/index/public/confirmnewpassword.html?token=${resetToken}`;
+    const resetLink = `http://20.198.48.206/confirmnewpassword.html?token=${resetToken}`;
+    // const resetLink = `http://20.198.48.206:3000/Web%20App/index/public/confirmnewpassword.html?token=${resetToken}`;
 
 
     // Log the start and end time of the token
