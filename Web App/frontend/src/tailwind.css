@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.tab-button {
+  @apply px-4 py-2 font-medium text-sm text-gray-600 border-b-2 hover:text-blue-600;
+}
+
+.tab-button.active {
+  @apply text-blue-600 border-blue-600;
+}
+
+.tab-content {
+  @apply bg-white p-4 shadow rounded-md;
+}
+
+
+/* Optional: You can style the attendance display as you prefer */
+.heatmap {
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.subject-attendance {
+  margin-top: 2rem;
+  background-color: #f3f4f6;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.subject-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.subject-item p {
+  font-size: 1rem;
+}
