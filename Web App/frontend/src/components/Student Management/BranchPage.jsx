@@ -1,136 +1,43 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../Navbar";
-import Header from "../Header";
+import Navbar from "../Common/Navbar";
+import Header from "../Common/Header";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSidebar } from "../../context/SidebarContext";
 import { IoIosArrowForward } from "react-icons/io";
+import axios from "axios";
+import Loading from "../Common/Loading";
 
 function BranchPage() {
   const { isSidebarVisible, toggleSidebar } = useSidebar();
-  const { branch } = useParams();
+  const [studentData, setStudentData] = useState([]);
+  const { year, branch } = useParams();
   const navigate = useNavigate();
-  const branches = [
-    { id: 1, short: "cse", name: "Computer Science", path: "/year/cse" },
-    { id: 2, short: "me", name: "Mechanical Engineering", path: "/year/me" },
-    { id: 3, short: "civil", name: "Civil Engineering", path: "/year/civil" },
-    { id: 4, short: "ee", name: "Electrical Engineering", path: "/year/ee" },
-    { id: 5, short: "it", name: "Information Technology", path: "/year/it" },
-  ];
 
-  const dummyStudents = [
-    {
-      id: 1,
-      name: "John Doe",
-      enrollmentNumber: "EN123456",
-      branch: "Computer Science",
-      batch: "Batch A",
-      semester: "3rd",
-      year: "2nd",
-      attendance: 85,
-      to: "/studentprofile",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      enrollmentNumber: "EN123457",
-      branch: "Mechanical Engineering",
-      batch: "Batch B",
-      semester: "2nd",
-      year: "1st",
-      attendance: 92,
-      to: "/studentprofile",
-    },
-    {
-      id: 3,
-      name: "Ali Khan",
-      enrollmentNumber: "EN123458",
-      branch: "Electrical Engineering",
-      batch: "Batch C",
-      semester: "1st",
-      year: "1st",
-      attendance: 78,
-      to: "/studentprofile",
-    },
-    {
-      id: 4,
-      name: "Emily Davis",
-      enrollmentNumber: "EN123459",
-      branch: "Civil Engineering",
-      batch: "Batch D",
-      semester: "4th",
-      year: "2nd",
-      attendance: 95,
-      to: "/studentprofile",
-    },
-    {
-      id: 5,
-      name: "Michael Lee",
-      enrollmentNumber: "EN123460",
-      branch: "Computer Science",
-      batch: "Batch A",
-      semester: "3rd",
-      year: "2nd",
-      attendance: 88,
-      to: "/studentprofile",
-    },
-    {
-      id: 6,
-      name: "Sophie Turner",
-      enrollmentNumber: "EN123461",
-      branch: "Chemical Engineering",
-      batch: "Batch E",
-      semester: "2nd",
-      year: "1st",
-      attendance: 90,
-      to: "/studentprofile",
-    },
-    {
-      id: 7,
-      name: "David Harris",
-      enrollmentNumber: "EN123462",
-      branch: "Information Technology",
-      batch: "Batch F",
-      semester: "5th",
-      year: "3rd",
-      attendance: 80,
-      to: "/studentprofile",
-    },
-    {
-      id: 8,
-      name: "Rachel Green",
-      enrollmentNumber: "EN123463",
-      branch: "Biotechnology",
-      batch: "Batch G",
-      semester: "6th",
-      year: "3rd",
-      attendance: 76,
-      to: "/studentprofile",
-    },
-    {
-      id: 9,
-      name: "Mark Wilson",
-      enrollmentNumber: "EN123464",
-      branch: "Physics",
-      batch: "Batch H",
-      semester: "1st",
-      year: "1st",
-      attendance: 83,
-      to: "/studentprofile",
-    },
-    {
-      id: 10,
-      name: "Lucas Brown",
-      enrollmentNumber: "EN123465",
-      branch: "Mathematics",
-      batch: "Batch I",
-      semester: "4th",
-      year: "2nd",
-      attendance: 91,
-      to: "/studentprofile",
-    },
-  ];
+  const fetchStudentsByYear = async (year, branch) => {
+    try {
+      const response = await axios.get(
+        `http://127.0.0.1:3001/api/student/${year}/${branch}`
+      );
 
-  const currentBranch = branches.find((b) => b.short === branch);
+      setStudentData(response.data.row);
+    } catch (error) {
+      console.error(
+        "Error fetching students by year:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  useEffect(() => {
+    fetchStudentsByYear(year, branch);
+  }, [year, branch]);
+
+  const changeBranchFormat = branch
+    .replace(/(^\w|\-\s*\w)/g, (match) => match.toUpperCase())
+    .replace("-", " ");
+  const changeYearFormat = year
+    .replace(/(^\w|\.\s*\w)/g, (match) => match.toUpperCase())
+    .replace("-", " ");
 
   return (
     <>
@@ -143,94 +50,155 @@ function BranchPage() {
         <main>
           <section className="page-header">
             <div className="header-title">
-              <h1>Branch: {currentBranch.name}</h1>
+              <h1>Branch: {changeBranchFormat}</h1>
               <div className="flex gap-2 items-center">
-              <input
-                type="text"
-                // value={filter}
-                // onChange={(e) => setFilter(e.target.value)}
-                className="p-2 border rounded"
-                placeholder="Search by name..."
-              />
-            </div>
+                <button
+                  onClick={() => {
+                    navigate(`/${year}/${branch}/add-student`);
+                  }}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                >
+                  Add Student
+                </button>
+              </div>
             </div>
             {/* Breadcrumb */}
             <div className="breadcrumb">
               <Link to="/dashboard">Home</Link>
               <span>
-                <IoIosArrowForward className="breadcrumb-icon " />
+                <IoIosArrowForward className="breadcrumb-icon" />
               </span>
-              <Link to="/year">Year I</Link>
+              <Link to={`/${year}`} onClick={(e) => e.stopPropagation()}>
+                {changeYearFormat}
+              </Link>
               <span>
-                <IoIosArrowForward className="breadcrumb-icon " />
+                <IoIosArrowForward className="breadcrumb-icon" />
               </span>
-              <span className="current-breadcrumb">{currentBranch.name}</span>
-              {/* <Link aria-disabled className="current-breadcrumb" to={`/year/${branch}`}>{currentBranch.name}</Link> */}
+              <span className="current-breadcrumb">{changeBranchFormat}</span>
+              {/* <Link aria-disabled className="current-breadcrumb" to={`/year/${branch}`}>{changeBranchFormat.name}</Link> */}
+            </div>
+            <div className="flex justify-between gap-4 my-4">
+              <input
+                type="text"
+                // value={filters.searchQuery}
+                // onChange={(e) => {
+                //   updateFilter("searchQuery", e.target.value);
+                // }}
+                placeholder="Search by name"
+                className="border border-gray-300 rounded-md px-4 py-2 w-full sm:w-1/3"
+              />
+              {/* <select
+                // value={filters.selectedBranch}
+                // onChange={(e) => {
+                //   updateFilter("selectedBranch", e.target.value);
+                // }}
+                className="border border-gray-300 rounded-md px-4 py-2 w-full sm:w-1/3"
+              >
+                <option value="">Select Branch</option>
+                {distinctBranches.map((branch, idx) => (
+                  <option key={idx} value={branch.Department}>
+                    {branch.Department}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={filters.selectedSubject}
+                onChange={(e) => {
+                  updateFilter("selectedSubject", e.target.value);
+                }}
+                className="border border-gray-300 rounded-md px-4 py-2 w-full sm:w-1/3"
+              >
+                <option value="">Select Subject</option>
+                {distinctSubjects.map((subject, idx) => (
+                  <option key={idx} value={subject.SubjectName}>
+                    {subject.SubjectName}
+                  </option>
+                ))}
+              </select> */}
+              <button
+                onClick={() => {
+                  setFilters({
+                    searchQuery: "",
+                    selectedBranch: "",
+                    selectedSubject: "",
+                  });
+                }}
+                className="bg-red-500 text-white px-4 py-2 text-nowrap rounded-md hover:bg-red-600"
+              >
+                Reset
+              </button>
             </div>
           </section>
 
-          <section className="explore-details">
-            <div className="explore-header">
-              <h2 className="explore-head-title">Student Details</h2>
-              <p className="explore-head-description">
-                Select your student to explore details.
-              </p>
-            </div>
-            {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {branches.map((branch) => (
-                <Link
-                  to={branch.path}
-                  key={branch.id}
-                  className="block bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-transform transform hover:-translate-y-1"
-                >
-                  <h3 className="text-lg font-bold text-gray-800">
-                    {branch.name}
-                  </h3>
-                  <p className="text-gray-600 mt-2">
-                    Dive into the world of {branch.name} to learn about the
-                    subjects and syllabus.
-                  </p>
-                </Link>
-              ))}
-            </div> */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-              {dummyStudents.map((student) => (
-                <div
-                  key={student.id}
-                  className="bg-white shadow-md rounded-lg p-4 transform transition-transform ease-in-out delay-0  hover:scale-105 hover:shadow-lg"
-                >
-                  <h3 className="text-xl font-bold mb-2">{student.name}</h3>
-                  <p className="text-gray-600">
-                    Enrollment: {student.enrollmentNumber}
-                  </p>
-                  <p className="text-gray-600">Branch: {student.branch}</p>
-                  <p className="text-gray-600">Batch: {student.batch}</p>
-                  <div className="flex justify-between items-center mb-4">
-                    <p className="text-gray-600">
-                      Year:{" "}
-                      <span className="font-semibold">{student.year}</span>
-                    </p>
-                    <p className="text-gray-600">
-                      Semester:{" "}
-                      <span className="font-semibold">{student.semester}</span>
-                    </p>
-                  </div>
-                  <p className="text-gray-600">
-                    Attendance:{" "}
-                    <span className="text-green-600 font-bold">
-                      {student.attendance}%
-                    </span>
-                  </p>
-                  <button
-                    onClick={() => navigate(student.to)}
-                    className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+          {studentData ? (
+            <section className="explore-details">
+              <div className="explore-header">
+                <h2 className="explore-head-title">Student Details</h2>
+                <p className="explore-head-description">
+                  Select your student to explore details.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+                {studentData.map((student) => (
+                  <div
+                    key={student.StudentID}
+                    className="bg-white shadow-md rounded-lg p-4 transform transition-transform ease-in-out delay-0  hover:scale-105 hover:shadow-lg"
                   >
-                    More Details
-                  </button>
-                </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                    <h3 className="text-xl font-bold mb-2">
+                      {student.StudentName}
+                    </h3>
+                    <p className="text-gray-600">
+                      Enrollment: {student.EnrollmentNo}
+                    </p>
+                    <p className="text-gray-600">Branch: {student.Branch}</p>
+                    <p className="text-gray-600">Batch: {student.Batch}</p>
+                    <div className="flex justify-between items-center mb-4">
+                      <p className="text-gray-600">
+                        Year:{" "}
+                        <span className="font-semibold">
+                          {`${student.Year}${
+                            student.Year === 1
+                              ? "st"
+                              : student.Year === 2
+                              ? "nd"
+                              : student.Year === 3
+                              ? "rd"
+                              : "th"
+                          }`}
+                        </span>
+                      </p>
+                      <p className="text-gray-600">
+                        Semester:{" "}
+                        <span className="font-semibold">
+                          {`${student.Semester}${
+                            student.Semester === 1
+                              ? "st"
+                              : student.Semester === 2
+                              ? "nd"
+                              : student.Semester === 3
+                              ? "rd"
+                              : "th"
+                          }`}
+                        </span>
+                      </p>
+                    </div>
+                    <p className="text-gray-600">
+                      Attendance:{" "}
+                      <span className="text-green-600 font-bold">
+                        {student.attendance}%
+                      </span>
+                    </p>
+                    <button
+                      onClick={() => navigate(student.studentPath)}
+                      className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+                    >
+                      More Details
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {/* Another Card Format */}
+              {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
               <div className="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300">
                 <div className="p-6">
                   <div className="text-lg font-semibold mb-2">
@@ -288,56 +256,11 @@ function BranchPage() {
                   </button>
                 </div>
               </div>
-            </div>
-          </section>
-
-          {/* Student Details */}
-          {/* <section>
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold text-gray-800">
-                Student Details
-              </h2>
-              <p className="text-gray-600 mt-1">
-                Select your student to explore details.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {students.map((student) => (
-                <Link
-                  to={student.path}
-                  key={student.id}
-                  className="block bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-transform transform hover:-translate-y-1"
-                >
-                  <h3 className="text-lg font-bold text-gray-800">
-                    {student.name}
-                  </h3>
-                  <p className="text-gray-600 mt-2">
-                    View details about {student.name}, their performance, and
-                    attendance.
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </section> */}
-
-          {/* <div className="page-cards">
-              <div className="card">
-                <div className="card-container">
-                  <div className="card-info">
-                    <div className="card-name">Name</div>
-                    <div className="card-enroll">Enroll</div>
-                    <div className="card-branch">branch</div>
-                    <div className="card-year-sem">
-                      <div className="card-year">year</div>
-                      <div className="card-sem">sem</div>
-                    </div>
-                    <div className="card-attendance-rate">85%</div>
-                  </div>
-
-                  <div className="card-button">More Details</div>
-                </div>
-              </div>
             </div> */}
+            </section>
+          ) : (
+            <Loading />
+          )}
         </main>
       </div>
     </>

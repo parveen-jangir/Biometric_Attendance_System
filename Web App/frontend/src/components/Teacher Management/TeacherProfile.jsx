@@ -10,28 +10,24 @@ import {
 import { Bar } from "react-chartjs-2";
 import PersonalInformation from "./PersonalInformation";
 import AttendanceHistory from "./AttendanceHistory";
-import Header from "../Header";
-import Navbar from "../Navbar";
+import Header from "../Common/Header";
+import Navbar from "../Common/Navbar";
 import { useSidebar } from "../../context/SidebarContext";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { IoIosArrowForward } from "react-icons/io";
+import axios from "axios";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const TeacherProfile = () => {
   const { isSidebarVisible, toggleSidebar } = useSidebar();
-
+  const { teacherprofile } = useParams();
   const [activeTab, setActiveTab] = useState("personalInfo");
-  const [attendanceData, setAttendanceData] = useState([]);
   const [performanceData, setPerformanceData] = useState({});
+  const [teacherProfileData, setTeacherProfileData] = useState([]);
 
   // Generate random attendance data for heatmap
   useEffect(() => {
-    const randomAttendance = Array.from({ length: 31 }, () =>
-      Math.floor(Math.random() * 2)
-    ); // 0 or 1 for present/absent
-    setAttendanceData(randomAttendance);
-
     // Generate random performance data for bar chart
     const performance = {
       labels: ["Math", "Science", "History", "Computer", "English"],
@@ -57,7 +53,12 @@ const TeacherProfile = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case "personalInfo":
-        return <PersonalInformation />;
+        return (
+          <PersonalInformation
+            teacherProfileData={teacherProfileData}
+            teacherprofile={teacherprofile}
+          />
+        );
       case "attendanceHistory":
         return <AttendanceHistory />;
       case "performance":
@@ -78,6 +79,31 @@ const TeacherProfile = () => {
     }
   };
 
+  const fetchTeachers = async () => {
+    try {
+      const response = await axios.get(
+        `http://127.0.0.1:3001/api/teacher/${teacherprofile}`
+      );
+      console.log("Teacher Profile:", response);
+      const data = response.data;
+      setTeacherProfileData(data.row);
+    } catch (error) {
+      // console.log(error.response?.status);
+      console.error(
+        "Error fetching students by year:",
+        error.response?.data || error.message
+      );
+      // if (error.response?.status === 404) {
+      //   return <FourZeroFour />;
+      // }
+    }
+  };
+
+  useEffect(() => {
+    if (teacherprofile) {
+      fetchTeachers();
+    }
+  }, [teacherprofile]);
   return (
     <>
       <Header toggleSidebar={toggleSidebar} />
@@ -95,12 +121,12 @@ const TeacherProfile = () => {
             <div className="breadcrumb">
               <Link to="/dashboard">Home</Link>
               <span>
-                <IoIosArrowForward className="breadcrumb-icon " />
+                <IoIosArrowForward className="breadcrumb-icon" />
               </span>
 
               <Link to="/teacher-management">Teacher Management</Link>
               <span>
-                <IoIosArrowForward className="breadcrumb-icon " />
+                <IoIosArrowForward className="breadcrumb-icon" />
               </span>
               <span className="current-breadcrumb">Teacher Profile</span>
             </div>

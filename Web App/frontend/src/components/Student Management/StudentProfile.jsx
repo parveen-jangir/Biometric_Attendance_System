@@ -10,28 +10,27 @@ import {
 import { Bar } from "react-chartjs-2";
 import PersonalInformation from "./PersonalInformation";
 import AttendanceHistory from "./AttendanceHistory";
-import Header from "../Header";
-import Navbar from "../Navbar";
+import Header from "../Common/Header";
+import Navbar from "../Common/Navbar";
 import { useSidebar } from "../../context/SidebarContext";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { IoIosArrowForward } from "react-icons/io";
+import axios from "axios";
+import FourZeroFour from "../Common/404";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const StudentProfile = () => {
   const { isSidebarVisible, toggleSidebar } = useSidebar();
-
   const [activeTab, setActiveTab] = useState("personalInfo");
-  const [attendanceData, setAttendanceData] = useState([]);
+  // const [attendanceData, setAttendanceData] = useState([]);
   const [performanceData, setPerformanceData] = useState({});
+  const { year, branch, studentprofile } = useParams();
+  const [studentProfileData, setStudentProfileData] = useState([]);
+  const [error, setError] = useState(null);
 
   // Generate random attendance data for heatmap
   useEffect(() => {
-    const randomAttendance = Array.from({ length: 31 }, () =>
-      Math.floor(Math.random() * 2)
-    ); // 0 or 1 for present/absent
-    setAttendanceData(randomAttendance);
-
     // Generate random performance data for bar chart
     const performance = {
       labels: ["Math", "Science", "History", "Computer", "English"],
@@ -57,7 +56,14 @@ const StudentProfile = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case "personalInfo":
-        return <PersonalInformation />;
+        return (
+          <PersonalInformation
+            studentProfileData={studentProfileData}
+            year={year}
+            branch={branch}
+            studentprofile={studentprofile}
+          />
+        );
       case "attendanceHistory":
         return <AttendanceHistory />;
       case "performance":
@@ -77,6 +83,76 @@ const StudentProfile = () => {
         return null;
     }
   };
+  // const fetchStudentsByYear = async (year, branch, studentprofile, setStudentProfileData) => {
+  //   try {
+  //     const response = await axios.post(
+  //       `http://127.0.0.1:3001/api/student/${year}/${branch}/${studentprofile}`
+  //     );
+
+  //     // Log the entire response to debug
+  //     console.log("Full Response:", response);
+
+  //     if (response.data && response.data.row) {
+  //       setStudentProfileData(response.data.row); // Use the correct key from the response
+  //       console.log("Students Data:", response.data.row);
+  //     } else {
+  //       console.error("Unexpected response structure:", response.data);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching students by year:", error.response?.data || error.message);
+
+  //     // Handle specific HTTP status codes
+  //     if (error.response?.status === 404) {
+  //       console.error("404: Resource not found");
+  //       // Render a custom 404 component or take some action
+  //       setError(404);
+  //     } else {
+  //       console.error("An unexpected error occurred");
+  //     }
+  //   }
+  // };
+  // if(error === 404){
+  //   return <FourZeroFour />
+  // }
+  const fetchStudentsByYear = async (
+    year,
+    branch,
+    studentprofile,
+    setStudentProfileData
+  ) => {
+    try {
+      const response = await axios.get(
+        `http://127.0.0.1:3001/api/student/${year}/${branch}/${studentprofile}`
+      );
+      console.log("Students for Year:", response);
+      const data = response.data;
+      setStudentProfileData(data.row);
+    } catch (error) {
+      // console.log(error.response?.status);
+      console.error(
+        "Error fetching students by year:",
+        error.response?.data || error.message
+      );
+      // if (error.response?.status === 404) {
+      //   return <FourZeroFour />;
+      // }
+    }
+  };
+  useEffect(() => {
+    fetchStudentsByYear(year, branch, studentprofile, setStudentProfileData);
+  }, [year, branch, studentprofile]);
+
+  const changeBranchFormat = branch
+    .replace(/(^\w|\-\s*\w)/g, (match) => match.toUpperCase())
+    .replace("-", " ");
+
+  const changeYearFormat = year
+    .replace(/(^\w|\.\s*\w)/g, (match) => match.toUpperCase())
+    .replace("-", " ");
+
+  const changeStudentFormat = studentprofile
+    .replace(/(^\w|\-\s*\w)/g, (match) => match.toUpperCase())
+    .replace("-", " ");
 
   return (
     <>
@@ -97,11 +173,18 @@ const StudentProfile = () => {
               <span>
                 <IoIosArrowForward className="breadcrumb-icon " />
               </span>
-              <Link to="/year">Year I</Link>
+              <Link to={`/${year}`} onClick={(e) => e.stopPropagation()}>
+                {changeYearFormat}
+              </Link>
               <span>
                 <IoIosArrowForward className="breadcrumb-icon " />
               </span>
-              <Link to="/year">Branch</Link>
+              <Link
+                to={`/${year}/${branch}`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {changeBranchFormat}
+              </Link>
               <span>
                 <IoIosArrowForward className="breadcrumb-icon " />
               </span>

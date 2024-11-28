@@ -29,8 +29,8 @@ console.log(JWT_SECRET);
 const db = mysql.createConnection({
   host: "localhost",
   user: "root", // Your MySQL username
-  password: "YourStr0ngP@ssw0rd!", // Your MySQL password
-  database: "biomatric_userdb", // Replace with your database name
+  password: "password", // Your MySQL password
+  database: "BiometricAttendance", // Replace with your database name
 });
 
 // Connect to the database

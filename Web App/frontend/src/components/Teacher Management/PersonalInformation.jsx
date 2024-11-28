@@ -1,18 +1,76 @@
-import React from "react";
+import axios from "axios";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Loading from "../Common/Loading";
 
-const PersonalInformation = () => {
-  const teacherInfo = {
-    name: "Dr. Jane Smith",
-    degination : "Assistant Professor",
-    teacherID: "TCH56789",
-    department: "EI & CE",
-    subjects: ["Algebra", "Calculus", "Statistics"],
-    experience: "12 years",
-    contact: "+1 987 654 3210",
-    email: "janesmith@example.com",
-    office: "Room 204, Math Building",
-    qualifications: "Ph.D. in Mathematics, B.Ed.",
-    address: "456 Maple Avenue, Springfield, USA",
+const PersonalInformation = ({ teacherProfileData, teacherprofile }) => {
+  const [teacherData, setTeacherData] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const navigate = useNavigate();
+  const [editFormData, setEditFormData] = useState(null);
+  useEffect(() => {
+    if (teacherProfileData && teacherProfileData.length > 0) {
+      setTeacherData(teacherProfileData[0]);
+      setEditFormData(teacherProfileData[0]);
+    }
+  }, [teacherProfileData]);
+  // Toggle edit mode
+  const handleEditClick = () => {
+    if (!isEditing) {
+      setEditFormData({ ...teacherData });
+    }
+    setIsEditing(!isEditing);
+  };
+  const handleCancelEdit = () => {
+    setEditFormData({ ...teacherData });
+    setIsEditing(false);
+  };
+
+  // Handle changes in the input fields
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({
+      ...prev,
+      [name]: name === "Subjects" ? value.split(", ") : value,
+    }));
+  };
+
+  if (!teacherData) {
+    return <Loading />;
+  }
+
+  const postEditTeacher = async () => {
+    try {
+      const checkChangedData = {};
+
+      for (let key in editFormData) {
+        if (editFormData[key] !== teacherData[key]) {
+          checkChangedData[key] = editFormData[key];
+        }
+      }
+
+      const response = await axios.post(
+        `http://127.0.0.1:3001/api/teacher/edit-teacher/${teacherprofile}`,
+        checkChangedData
+      );
+
+      const {message, Path: updatedPath} = response.data
+
+      setTeacherData((prev) => ({ ...prev, ...checkChangedData }));
+
+      setIsEditing(false);
+      alert("Profile updated successfully!");
+      if (updatedPath && updatedPath !== teacherprofile) {
+        navigate(`/teacher-management/${updatedPath}`, {replace: true});
+      }
+  
+    } catch (error) {
+      console.error(
+        "Error updating teacher profile:",
+        error.response?.data.error || error.message
+      );
+      // alert("Failed to update profile. Please try again."); // Replace with toast
+    }
   };
 
   return (
@@ -22,9 +80,21 @@ const PersonalInformation = () => {
           <h1 className="text-2xl font-bold text-gray-800">
             Teacher Information
           </h1>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-            Edit
-          </button>
+          {isEditing ? (
+            <button
+              onClick={postEditTeacher}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Save
+            </button>
+          ) : (
+            <button
+              onClick={handleEditClick}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Edit
+            </button>
+          )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Name */}
@@ -32,9 +102,20 @@ const PersonalInformation = () => {
             <label className="block text-sm font-medium text-gray-600">
               Name
             </label>
-            <p className="mt-1 text-lg font-semibold text-gray-800">
-              {teacherInfo.name}
-            </p>
+            {isEditing ? (
+              <input
+                type="text"
+                name="TeacherName"
+                value={editFormData.TeacherName}
+                required
+                onChange={handleInputChange}
+                className="mt-1 text-lg font-semibold text-gray-800 border border-gray-300 rounded p-2 w-full"
+              />
+            ) : (
+              <p className="mt-1 text-lg font-semibold text-gray-800">
+                {teacherData.TeacherName}
+              </p>
+            )}
           </div>
 
           {/* Teacher ID */}
@@ -42,19 +123,40 @@ const PersonalInformation = () => {
             <label className="block text-sm font-medium text-gray-600">
               Teacher ID
             </label>
-            <p className="mt-1 text-lg font-semibold text-gray-800">
-              {teacherInfo.teacherID}
-            </p>
+            {isEditing ? (
+              <input
+                type="text"
+                name="TeacherID"
+                value={editFormData.TeacherID}
+                required
+                onChange={handleInputChange}
+                className="mt-1 text-lg font-semibold text-gray-800 border border-gray-300 rounded p-2 w-full"
+              />
+            ) : (
+              <p className="mt-1 text-lg font-semibold text-gray-800">
+                {teacherData.TeacherID}
+              </p>
+            )}
           </div>
 
-          {/* Teacher ID */}
+          {/* Designation */}
           <div>
             <label className="block text-sm font-medium text-gray-600">
-              Degination
+              Designation
             </label>
-            <p className="mt-1 text-lg font-semibold text-gray-800">
-              {teacherInfo.degination}
-            </p>
+            {isEditing ? (
+              <input
+                type="text"
+                name="Designation"
+                value={editFormData.Designation}
+                onChange={handleInputChange}
+                className="mt-1 text-lg font-semibold text-gray-800 border border-gray-300 rounded p-2 w-full"
+              />
+            ) : (
+              <p className="mt-1 text-lg font-semibold text-gray-800">
+                {teacherData.Designation}
+              </p>
+            )}
           </div>
 
           {/* Department */}
@@ -62,9 +164,19 @@ const PersonalInformation = () => {
             <label className="block text-sm font-medium text-gray-600">
               Department
             </label>
-            <p className="mt-1 text-lg font-semibold text-gray-800">
-              {teacherInfo.department}
-            </p>
+            {isEditing ? (
+              <input
+                type="text"
+                name="Department"
+                value={editFormData.Department}
+                onChange={handleInputChange}
+                className="mt-1 text-lg font-semibold text-gray-800 border border-gray-300 rounded p-2 w-full"
+              />
+            ) : (
+              <p className="mt-1 text-lg font-semibold text-gray-800">
+                {teacherData.Department}
+              </p>
+            )}
           </div>
 
           {/* Subjects */}
@@ -72,13 +184,20 @@ const PersonalInformation = () => {
             <label className="block text-sm font-medium text-gray-600">
               Subjects
             </label>
-            <p className="mt-1 text-lg font-semibold text-gray-800">
-              {teacherInfo.subjects.join(", ")}
-              {/* {teacherInfo.subjects.map((subject, index) => (
-                // <li key={index}>{subject} </li>
-                {subject}
-              ))} */}
-            </p>
+            {isEditing ? (
+              <input
+                type="text"
+                name="Subjects"
+                value={editFormData.Subjects.join(", ")}
+                required
+                onChange={handleInputChange}
+                className="mt-1 text-lg font-semibold text-gray-800 border border-gray-300 rounded p-2 w-full"
+              />
+            ) : (
+              <p className="mt-1 text-lg font-semibold text-gray-800">
+                {editFormData.Subjects.join(", ")}
+              </p>
+            )}
           </div>
 
           {/* Experience */}
@@ -86,9 +205,19 @@ const PersonalInformation = () => {
             <label className="block text-sm font-medium text-gray-600">
               Experience
             </label>
-            <p className="mt-1 text-lg font-semibold text-gray-800">
-              {teacherInfo.experience}
-            </p>
+            {isEditing ? (
+              <input
+                type="number"
+                name="Experience"
+                value={editFormData.Experience}
+                onChange={handleInputChange}
+                className="mt-1 text-lg font-semibold text-gray-800 border border-gray-300 rounded p-2 w-full"
+              />
+            ) : (
+              <p className="mt-1 text-lg font-semibold text-gray-800">
+                {teacherData.Experience}
+              </p>
+            )}
           </div>
 
           {/* Contact */}
@@ -96,9 +225,20 @@ const PersonalInformation = () => {
             <label className="block text-sm font-medium text-gray-600">
               Contact
             </label>
-            <p className="mt-1 text-lg font-semibold text-gray-800">
-              {teacherInfo.contact}
-            </p>
+            {isEditing ? (
+              <input
+                type="number"
+                name="ContactNo"
+                value={editFormData.ContactNo}
+                required
+                onChange={handleInputChange}
+                className="mt-1 text-lg font-semibold text-gray-800 border border-gray-300 rounded p-2 w-full"
+              />
+            ) : (
+              <p className="mt-1 text-lg font-semibold text-gray-800">
+                {teacherData.ContactNo}
+              </p>
+            )}
           </div>
 
           {/* Email */}
@@ -106,9 +246,19 @@ const PersonalInformation = () => {
             <label className="block text-sm font-medium text-gray-600">
               Email
             </label>
-            <p className="mt-1 text-lg font-semibold text-gray-800">
-              {teacherInfo.email}
-            </p>
+            {isEditing ? (
+              <input
+                type="email"
+                name="Email"
+                value={editFormData.Email}
+                onChange={handleInputChange}
+                className="mt-1 text-lg font-semibold text-gray-800 border border-gray-300 rounded p-2 w-full"
+              />
+            ) : (
+              <p className="mt-1 text-lg font-semibold text-gray-800">
+                {teacherData.Email}
+              </p>
+            )}
           </div>
 
           {/* Office */}
@@ -116,9 +266,19 @@ const PersonalInformation = () => {
             <label className="block text-sm font-medium text-gray-600">
               Office Location
             </label>
-            <p className="mt-1 text-lg font-semibold text-gray-800">
-              {teacherInfo.office}
-            </p>
+            {isEditing ? (
+              <input
+                type="text"
+                name="OfficeLocation"
+                value={editFormData.OfficeLocation}
+                onChange={handleInputChange}
+                className="mt-1 text-lg font-semibold text-gray-800 border border-gray-300 rounded p-2 w-full"
+              />
+            ) : (
+              <p className="mt-1 text-lg font-semibold text-gray-800">
+                {teacherData.OfficeLocation}
+              </p>
+            )}
           </div>
 
           {/* Qualifications */}
@@ -126,9 +286,19 @@ const PersonalInformation = () => {
             <label className="block text-sm font-medium text-gray-600">
               Qualifications
             </label>
-            <p className="mt-1 text-lg font-semibold text-gray-800">
-              {teacherInfo.qualifications}
-            </p>
+            {isEditing ? (
+              <input
+                type="text"
+                name="Qualifications"
+                value={editFormData.Qualifications}
+                onChange={handleInputChange}
+                className="mt-1 text-lg font-semibold text-gray-800 border border-gray-300 rounded p-2 w-full"
+              />
+            ) : (
+              <p className="mt-1 text-lg font-semibold text-gray-800">
+                {teacherData.Qualifications}
+              </p>
+            )}
           </div>
 
           {/* Address */}
@@ -136,15 +306,36 @@ const PersonalInformation = () => {
             <label className="block text-sm font-medium text-gray-600">
               Address
             </label>
-            <p className="mt-1 text-lg font-semibold text-gray-800">
-              {teacherInfo.address}
-            </p>
+            {isEditing ? (
+              <textarea
+                name="Address"
+                value={editFormData.Address}
+                onChange={handleInputChange}
+                className="mt-1 text-lg font-semibold text-gray-800 border border-gray-300 rounded p-2 w-full"
+              />
+            ) : (
+              <p className="mt-1 text-lg font-semibold text-gray-800">
+                {teacherData.Address}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex justify-end mt-6">
-          <button className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-            Back
-          </button>
+          {isEditing ? (
+            <button
+              className="bg-red-500 text-white px-4 py-2 text-nowrap rounded hover:bg-red-600"
+              onClick={handleCancelEdit}
+            >
+              Cancel
+            </button>
+          ) : (
+            <button
+              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              onClick={() => navigate(-1)}
+            >
+              Back
+            </button>
+          )}
         </div>
       </div>
     </div>

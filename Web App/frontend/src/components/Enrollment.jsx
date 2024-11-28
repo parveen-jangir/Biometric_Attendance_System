@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "./Navbar";
-import Header from "./Header";
+import Navbar from "./Common/Navbar";
+import Header from "./Common/Header";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
 import { IoIosArrowForward } from "react-icons/io";

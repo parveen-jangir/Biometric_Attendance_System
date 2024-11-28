@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "./Navbar";
-import Header from "./Header";
+import Navbar from "./Common/Navbar";
+import Header from "./Common/Header";
 import { useSidebar } from "../context/SidebarContext";
 
 const Timetable = () => {
