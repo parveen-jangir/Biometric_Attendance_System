@@ -2,37 +2,49 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../Common/Navbar";
 import Header from "../Common/Header";
 import { useSidebar } from "../../context/SidebarContext";
-import { IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowForward } from "../../utils/icons";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import Loading from "../Common/Loading";
+import ErrorBox from "../Common/ErrorBox";
+import { changeYearFormatFnx } from "../../utils/helpers";
 
 const Year = () => {
   const { isSidebarVisible, toggleSidebar } = useSidebar();
   const { year } = useParams();
   const [branchData, setBranchData] = useState([]);
-
+  const [errorMessage, setErrorMessage] = useState([{ isActive: false }]);
+  
   const fetchStudentsByYear = async (year) => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:3001/api/student/${year}`
+        `${import.meta.env.VITE_API_BASE_URL}student/${year}`
       );
       console.log("Students for Year:", response);
-      const data = response.data;
-      setBranchData(data.row);
+      setBranchData(response.data.row);
     } catch (error) {
-      console.error(
-        "Error fetching students by year:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error fetching students by year:",
+      //   error.response?.data || error.message
+      // );
+      setErrorMessage(() => [
+        {
+          id: Math.random(),
+          type: "error",
+          message:
+            error.response?.data.error ||
+            "Failed to fetch data. Please try again.",
+          isActive: true,
+        },
+      ]);
     }
   };
+
   useEffect(() => {
     fetchStudentsByYear(year);
   }, [year]);
-  const changeYearFormat = year
-    .replace(/(^\w|\.\s*\w)/g, (match) => match.toUpperCase())
-    .replace("-", " ");
+
+  const changeYearFormat = changeYearFormatFnx(year);
   return (
     <>
       <Header toggleSidebar={toggleSidebar} />
@@ -54,6 +66,17 @@ const Year = () => {
               </span>
               <span className="current-breadcrumb">{changeYearFormat}</span>
             </div>
+            {errorMessage[0].isActive &&
+              errorMessage.map((errorMessage) => (
+                <ErrorBox
+                  key={errorMessage.id}
+                  type={errorMessage.type}
+                  message={errorMessage.message}
+                  onClose={() => {
+                    setErrorMessage([{ isActive: false }]);
+                  }}
+                />
+              ))}
           </section>
 
           {/* Branch Details */}

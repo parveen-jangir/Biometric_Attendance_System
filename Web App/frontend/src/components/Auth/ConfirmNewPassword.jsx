@@ -46,7 +46,7 @@ function ConfirmNewPassword() {
       setLoading(true);
 
       const response = await axios.post(
-        "http://127.0.0.1:3001/api/auth/confirm-newpassword",
+        `${import.meta.env.VITE_API_BASE_URL}auth/confirm-newpassword`,
         {
           token,
           newPassword,

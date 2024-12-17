@@ -14,8 +14,10 @@ import Header from "../Common/Header";
 import Navbar from "../Common/Navbar";
 import { useSidebar } from "../../context/SidebarContext";
 import { Link, useParams } from "react-router-dom";
-import { IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowForward } from "../../utils/icons";
 import axios from "axios";
+import ErrorBox from "../Common/ErrorBox";
+import TeacherTimetable from "./TeacherTimetable";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -24,7 +26,8 @@ const TeacherProfile = () => {
   const { teacherprofile } = useParams();
   const [activeTab, setActiveTab] = useState("personalInfo");
   const [performanceData, setPerformanceData] = useState({});
-  const [teacherProfileData, setTeacherProfileData] = useState([]);
+  const [teacherProfileData, setTeacherProfileData] = useState({});
+  const [errorMessage, setErrorMessage] = useState([{ isActive: false }]);
 
   // Generate random attendance data for heatmap
   useEffect(() => {
@@ -50,6 +53,17 @@ const TeacherProfile = () => {
     setPerformanceData(performance);
   }, []);
 
+  const handleChildError = (type, message) => {
+    setErrorMessage(() => [
+      {
+        id: Math.random(),
+        type: type,
+        message: message,
+        isActive: true,
+      },
+    ]);
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "personalInfo":
@@ -57,10 +71,13 @@ const TeacherProfile = () => {
           <PersonalInformation
             teacherProfileData={teacherProfileData}
             teacherprofile={teacherprofile}
+            handleChildError={handleChildError}
           />
         );
       case "attendanceHistory":
         return <AttendanceHistory />;
+      case "teacherTimetable":
+        return <TeacherTimetable />;
       case "performance":
         return (
           <div className="tab-content">
@@ -82,20 +99,20 @@ const TeacherProfile = () => {
   const fetchTeachers = async () => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:3001/api/teacher/${teacherprofile}`
+        `${import.meta.env.VITE_API_BASE_URL}teacher/${teacherprofile}`
       );
       console.log("Teacher Profile:", response);
-      const data = response.data;
-      setTeacherProfileData(data.row);
+      setTeacherProfileData(response.data.row);
     } catch (error) {
-      // console.log(error.response?.status);
-      console.error(
-        "Error fetching students by year:",
-        error.response?.data || error.message
+      // console.error(
+      //   "Error fetching students by year:",
+      //   error.response?.data || error.message
+      // );
+      handleChildError(
+        "error",
+        error.response?.data.error ||
+          "Failed to fetch teacher profile. Please try again."
       );
-      // if (error.response?.status === 404) {
-      //   return <FourZeroFour />;
-      // }
     }
   };
 
@@ -115,7 +132,11 @@ const TeacherProfile = () => {
         <main>
           <section className="page-header">
             <div className="header-title">
-              <h1>Teacher Profile</h1>
+              <h1>
+                {teacherProfileData?.[0]?.TeacherName
+                  ? teacherProfileData?.[0]?.TeacherName
+                  : ""}
+              </h1>
             </div>
             {/* Breadcrumb */}
             <div className="breadcrumb">
@@ -130,6 +151,17 @@ const TeacherProfile = () => {
               </span>
               <span className="current-breadcrumb">Teacher Profile</span>
             </div>
+            {errorMessage[0].isActive &&
+              errorMessage.map((errorMessage) => (
+                <ErrorBox
+                  key={errorMessage.id}
+                  type={errorMessage.type}
+                  message={errorMessage.message}
+                  onClose={() => {
+                    setErrorMessage([{ isActive: false }]);
+                  }}
+                />
+              ))}
           </section>
           <div className="student-profile-container">
             {/* <h1 className="text-2xl text-gray-800 font-semibold mb-4">
@@ -151,6 +183,14 @@ const TeacherProfile = () => {
                 onClick={() => setActiveTab("attendanceHistory")}
               >
                 Attendance History
+              </button>
+              <button
+                className={`tab-button ${
+                  activeTab === "teacherTimetable" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("teacherTimetable")}
+              >
+                Timetable
               </button>
               <button
                 className={`tab-button ${

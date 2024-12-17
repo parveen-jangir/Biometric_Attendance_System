@@ -1,27 +1,33 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { GoHome, GoHomeFill } from "react-icons/go";
 import {
+  GoHome,
+  GoHomeFill,
   PiStudentLight,
   PiChalkboardTeacherLight,
   PiChalkboardTeacherFill,
   PiStudentFill,
-} from "react-icons/pi";
-import { IoPeopleOutline, IoPeopleSharp   } from "react-icons/io5";
-import { IoIosArrowDown } from "react-icons/io";
-import { RiTableLine } from "react-icons/ri";
+  IoPeopleOutline,
+  IoPeopleSharp,
+  IoIosArrowDown,
+  RiTableLine,
+} from "../../utils/icons";
 
-
-function Navbar({ isSidebarVisible }) {
+const Navbar = ({ isSidebarVisible }) => {
   const navIconContainer = [
     { navigation: "Dashboard", lightIcon: GoHome, to: "/dashboard" },
     { navigation: "Enroll", lightIcon: IoPeopleOutline, to: "/enroll" },
-    { navigation: "Student Management", lightIcon: PiStudentLight, to: "/students" },
+    {
+      navigation: "Student Management",
+      lightIcon: PiStudentLight,
+      to: "/students",
+    },
     {
       navigation: "Teacher Management",
       lightIcon: PiChalkboardTeacherLight,
       to: "/teacher-management",
-    },{
+    },
+    {
       navigation: "TimeTable",
       lightIcon: RiTableLine,
       to: "/timetable",
@@ -112,7 +118,7 @@ function Navbar({ isSidebarVisible }) {
                   </Link>
                 </div>
               </div> */}
-              
+
               <div className="n-container-title">
                 <div className="page-heading" onClick={toggleSubmenu}>
                   <Link to="#" className="in-page-heading">
@@ -125,7 +131,7 @@ function Navbar({ isSidebarVisible }) {
                   </Link>
                   <div className="n-icon-title">
                     {/* <i className="fa-solid fa-angle-down"></i> */}
-                    <IoIosArrowDown className="n-icon"  />
+                    <IoIosArrowDown className="n-icon" />
                   </div>
                 </div>
 
@@ -181,7 +187,6 @@ function Navbar({ isSidebarVisible }) {
                       </Link>
                     </div>
                   </div>
-
                 </div>
               </div>
 
@@ -322,6 +327,6 @@ function Navbar({ isSidebarVisible }) {
       )}
     </>
   );
-}
+};
 
 export default Navbar;

@@ -3,7 +3,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Loading from "../Common/Loading";
 
-const PersonalInformation = ({ teacherProfileData, teacherprofile }) => {
+const PersonalInformation = ({
+  teacherProfileData,
+  teacherprofile,
+  handleChildError,
+}) => {
   const [teacherData, setTeacherData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
@@ -50,26 +54,30 @@ const PersonalInformation = ({ teacherProfileData, teacherprofile }) => {
       }
 
       const response = await axios.post(
-        `http://127.0.0.1:3001/api/teacher/edit-teacher/${teacherprofile}`,
+        `${import.meta.env.VITE_API_BASE_URL}teacher/edit-teacher/${teacherprofile}`,
         checkChangedData
       );
 
-      const {message, Path: updatedPath} = response.data
-
+      const { message, Path: updatedPath } = response.data;
       setTeacherData((prev) => ({ ...prev, ...checkChangedData }));
-
       setIsEditing(false);
-      alert("Profile updated successfully!");
+
+      // alert("Profile updated successfully!");
       if (updatedPath && updatedPath !== teacherprofile) {
-        navigate(`/teacher-management/${updatedPath}`, {replace: true});
+        navigate(`/teacher-management/${updatedPath}`, { replace: true });
       }
-  
+      handleChildError("success", message || "Profile updated successfully!");
     } catch (error) {
-      console.error(
-        "Error updating teacher profile:",
-        error.response?.data.error || error.message
+      // console.error(
+      //   "Error updating teacher profile:",
+      //   error.response?.data.error || error.message
+      // );
+
+      handleChildError(
+        "error",
+        error.response?.data.error ||
+          "Failed to update profile. Please try again."
       );
-      // alert("Failed to update profile. Please try again."); // Replace with toast
     }
   };
 

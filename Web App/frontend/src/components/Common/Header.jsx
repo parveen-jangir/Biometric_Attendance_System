@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { IoMenu } from "react-icons/io5";
+import { IoMenu } from "../../utils/icons";
 
-function Header({ toggleSidebar }) {
+const Header = ({ toggleSidebar }) => {
   return (
     <header>
       <div className="h-container">
@@ -27,6 +27,6 @@ function Header({ toggleSidebar }) {
       </div>
     </header>
   );
-}
+};
 
 export default Header;

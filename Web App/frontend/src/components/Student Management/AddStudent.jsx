@@ -1,14 +1,18 @@
 import React, { useState } from "react";
 import { useNavigate, Link, useParams } from "react-router-dom";
 import axios from "axios";
-import { IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowForward } from "../../utils/icons";
 import { useSidebar } from "../../context/SidebarContext";
 import Header from "../Common/Header";
 import Navbar from "../Common/Navbar";
+import ErrorBox from "../Common/ErrorBox";
 
 const AddStudent = () => {
   const { isSidebarVisible, toggleSidebar } = useSidebar();
   const { year, branch } = useParams();
+  const [errorMessage, setErrorMessage] = useState([{ isActive: false }]);
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     StudentName: "",
     EnrollmentNo: "",
@@ -21,9 +25,6 @@ const AddStudent = () => {
     Address: "",
   });
 
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -31,27 +32,55 @@ const AddStudent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const filterFormData = Object.entries(formData).reduce(
+      (acc, [key, value]) => {
+        if (value !== "" && value !== null && value !== " ") {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {}
+    );
     try {
       const response = await axios.post(
-        "http://127.0.0.1:3001/api/student/add-student",
-        formData
+        `${import.meta.env.VITE_API_BASE_URL}student/add-student`,
+        filterFormData
       );
-      console.log(response.data);
-      alert("Student added successfully!");
-      navigate(`/${year}/${branch}`);
-    } catch (err) {
-      console.error("Error adding student:", err.response?.data || err.message);
-      setError("Failed to add student. Please try again.");
+      console.log(response);
+      // alert("Student added successfully!");
+      navigate(`/${year}/${branch}`, {
+        state: {
+          error: "success",
+          message: response.data.message || "Student added successfully!",
+        },
+      });
+    } catch (error) {
+      // console.error(
+      //   "Error adding student:",
+      //   error.response?.data || error.message
+      // );
+
+      setErrorMessage(() => [
+        {
+          id: Math.random(),
+          type: "error",
+          message:
+            error.response?.data.error ||
+            "Failed to add student. Please try again.",
+          isActive: true,
+        },
+      ]);
     }
   };
 
   const changeBranchFormat = branch
     .replace(/(^\w|\-\s*\w)/g, (match) => match.toUpperCase())
     .replace("-", " ");
-  // console.log(changeBranchFormat)
+
   const changeYearFormat = year
     .replace(/(^\w|\.\s*\w)/g, (match) => match.toUpperCase())
     .replace("-", " ");
+
   return (
     <>
       <Header toggleSidebar={toggleSidebar} />
@@ -81,6 +110,17 @@ const AddStudent = () => {
               </span>
               <span className="current-breadcrumb">Add Student</span>
             </div>
+            {errorMessage[0].isActive &&
+              errorMessage.map((errorMessage) => (
+                <ErrorBox
+                  key={errorMessage.id}
+                  type={errorMessage.type}
+                  message={errorMessage.message}
+                  onClose={() => {
+                    setErrorMessage([{ isActive: false }]);
+                  }}
+                />
+              ))}
           </section>
           <section className="explore-details">
             <div className="min-h-screen bg-gray-100 py-10">
@@ -89,8 +129,6 @@ const AddStudent = () => {
                   onSubmit={handleSubmit}
                   className="bg-white shadow-lg rounded-lg p-6 max-w-2xl mx-auto"
                 >
-                  {error && <p className="text-red-500 mb-4">{error}</p>}
-
                   {/* Form Fields */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -128,7 +166,6 @@ const AddStudent = () => {
                           name="EnrollmentNo"
                           value={formData.EnrollmentNo}
                           onChange={handleInputChange}
-                          
                           className="w-full px-3 py-2 border rounded focus:ring focus:outline-none"
                         />
                       </label>
@@ -156,7 +193,6 @@ const AddStudent = () => {
                           name="Batch"
                           value={formData.Batch}
                           onChange={handleInputChange}
-                          
                           className="w-full px-3 py-2 border rounded focus:ring focus:outline-none"
                         />
                       </label>
@@ -212,7 +248,6 @@ const AddStudent = () => {
                           name="Email"
                           value={formData.Email}
                           onChange={handleInputChange}
-                          
                           className="w-full px-3 py-2 border rounded focus:ring focus:outline-none"
                         />
                       </label>
@@ -225,7 +260,6 @@ const AddStudent = () => {
                           name="Address"
                           value={formData.Address}
                           onChange={handleInputChange}
-                          
                           className="w-full px-3 py-2 border rounded focus:ring focus:outline-none"
                         ></textarea>
                       </label>

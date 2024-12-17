@@ -1,17 +1,20 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { replace, useNavigate } from "react-router-dom";
 import Loading from "../Common/Loading";
+import ErrorBox from "../Common/ErrorBox";
 
 const PersonalInformation = ({
   studentProfileData,
   year,
   branch,
   studentprofile,
+  handleChildError,
 }) => {
   const [studentData, setStudentData] = useState(null);
   const [editFormData, setEditFormData] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  // const [errorMessage, setErrorMessage] = useState([{ isActive: false }]);
   const navigate = useNavigate();
 
   const handleCancelEdit = () => {
@@ -51,8 +54,20 @@ const PersonalInformation = ({
         }
       }
 
+      if (Object.keys(checkChangedData).length === 0) {
+        setErrorMessage(() => [
+          {
+            id: Math.random(),
+            type: "error",
+            message: "No changes are made",
+            isActive: true,
+          },
+        ]);
+        return;
+      }
+
       const response = await axios.post(
-        `http://127.0.0.1:3001/api/student/edit-student/${studentprofile}`,
+        `${import.meta.env.VITE_API_BASE_URL}student/edit-student/${studentprofile}`,
         checkChangedData
       );
       const { Year, path, studentPath, message } = response.data;
@@ -63,22 +78,52 @@ const PersonalInformation = ({
       const updatedPath = path || branch;
       const updatedStudentPath = studentPath || studentprofile;
 
-      alert(message || "Profile updated successfully!");
+      // alert(message || "Profile updated successfully!");
 
       navigate(`/${updatedYear}/${updatedPath}/${updatedStudentPath}`, {
         replace: true,
       });
+      handleChildError("success", message || "Profile updated successfully!");
+      // setErrorMessage(() => [
+      //   {
+      //     id: Math.random(),
+      //     type: "success",
+      //     message: message || "Profile updated successfully!",
+      //     isActive: true,
+      //   },
+      // ]);
     } catch (error) {
-      console.error(
-        "Error updating student profile:",
-        error.response?.data.error || error.message
+      handleChildError(
+        "error",
+        error.response?.data.error ||
+          "Failed to update profile. Please try again."
       );
-      // alert("Failed to update profile. Please try again."); // Replace with toast
+      // setErrorMessage(() => [
+      //   {
+      //     id: Math.random(),
+      //     type: "error",
+      //     message:
+      //       error.response?.data.error ||
+      //       "Failed to update profile. Please try again.",
+      //     isActive: true,
+      //   },
+      // ]);
     }
   };
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 py-8">
+      {/* {errorMessage[0].isActive &&
+        errorMessage.map((errorMessage) => (
+          <ErrorBox
+            key={errorMessage.id}
+            type={errorMessage.type}
+            message={errorMessage.message}
+            onClose={() => {
+              setErrorMessage([{ isActive: false }]);
+            }}
+          />
+        ))} */}
       <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg p-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-800">

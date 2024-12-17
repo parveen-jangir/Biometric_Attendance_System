@@ -27,7 +27,7 @@ const Login = () => {
   //   try {
   //     setLoading(true);
 
-  //     const response = await fetch("http://127.0.0.1:3001/api/auth/login", {
+  //     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}auth/login` {
   //       method: "POST",
   //       headers: { "Content-Type": "application/json" },
   //       body: JSON.stringify({ email, password }),
@@ -68,7 +68,7 @@ const Login = () => {
       setLoading(true);
 
       const response = await axios.post(
-        "http://127.0.0.1:3001/api/auth/login",
+        `${import.meta.env.VITE_API_BASE_URL}auth/login`,
         {
           email,
           password,

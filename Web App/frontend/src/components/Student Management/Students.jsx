@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../Common/Navbar";
 import Header from "../Common/Header";
 import { useSidebar } from "../../context/SidebarContext";
-import { IoSearch } from "react-icons/io5";
+import { IoSearch } from "../../utils/icons";
 
 const Students = () => {
   const { isSidebarVisible, toggleSidebar } = useSidebar();

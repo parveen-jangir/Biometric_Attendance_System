@@ -31,7 +31,7 @@ const OtpVerification = () => {
       setLoading(true);
 
       const response = await axios.post(
-        "http://127.0.0.1:3001/api/auth/verify-otp",
+        `${import.meta.env.VITE_API_BASE_URL}auth/verify-otp`,
         {
           email,
           otp,

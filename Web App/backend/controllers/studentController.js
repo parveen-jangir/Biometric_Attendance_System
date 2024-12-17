@@ -2,22 +2,26 @@ import db from "../config/database.js";
 import database from "../config/database2.js";
 
 export const getStudentsByYear = async (req, res) => {
-  const yearParam = req.params.year;
-  const year = parseInt(yearParam.replace("year-", ""), 10);
-  const query = `SELECT DISTINCT branch, path FROM Student WHERE year = ?`;
+  const { year } = req.params;
+
+  if (!year) {
+    return res
+      .status(400)
+      .json({ error: "Student identifier is not provided." });
+  }
+  const yearParam = parseInt(year.replace("year-", ""), 10);
+  const query = `SELECT DISTINCT branch, path FROM Student WHERE Year = ?`;
 
   try {
-    db.query(query, [year], (err, result) => {
+    db.query(query, [yearParam], (err, result) => {
       if (err) {
         console.error("Error executing query:", err);
         return res.status(400).json({
-          error: "Database Error",
+          error: "Database error",
         });
       }
       if (result.length === 0) {
-        return res
-          .status(404)
-          .json({ error: `No branches found for year ${year}` });
+        return res.status(404).json({ error: `No Data Found` });
       }
 
       return res.json({
@@ -27,49 +31,70 @@ export const getStudentsByYear = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching branch by year:", error);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Server error" });
   }
 };
 
 export const getStudentsByBranch = async (req, res) => {
-  const yearParam = req.params.year;
-  const branchParam = req.params.branch;
+  const { year, branch } = req.params;
+  const { searchQuery } = req.query;
+  if (!year || !branch) {
+    return res
+      .status(400)
+      .json({ error: "Student identifier is not provided." });
+  }
 
-  const branch = branchParam
+  const yearParam = parseInt(year.replace("year-", ""), 10);
+  const branchParam = branch
     .replace(/(^\w|\-\s*\w)/g, (match) => match.toUpperCase())
     .replace("-", " ");
-  const year = parseInt(yearParam.replace("year-", ""), 10);
-  // console.log(year, branch);
 
-  const query = `SELECT * FROM Student WHERE year = ? AND branch = ?`;
+  let query = `SELECT * FROM Student WHERE Year = ? AND Branch = ?`;
+
+  let conditions = [];
+  let queryParams = [];
+
+  if (searchQuery) {
+    conditions.push(`StudentName LIKE ?`);
+    queryParams.push(`${searchQuery}%`);
+  }
+
+  if (conditions.length > 0) {
+    query += ` AND ${conditions.join(" ")} `;
+  }
+
   try {
-    db.query(query, [year, branch], (err, result) => {
+    db.query(query, [yearParam, branchParam, ...queryParams], (err, result) => {
       if (err) {
         console.error("Error executing query:", err);
         return res.status(400).json({
-          error: "in database data is not found",
+          error: "Database Error",
         });
       }
       if (result.length === 0) {
         return res.status(404).json({
-          error: `No students found for year ${year} and branch ${branch}`,
+          error: `No data found`,
         });
       }
 
-      //   console.log(`Distinct branches for year, ${year}, : ${result}`);
-      // result.map((branch) => console.log(branch));
       return res.json({
         message: "Successfully fetch Student",
         row: result,
       });
     });
   } catch (error) {
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Server error" });
   }
 };
 
 export const getStudentDetails = async (req, res) => {
   const { year, branch, studentprofile } = req.params;
+
+  if (!year || !branch || !studentprofile) {
+    return res
+      .status(400)
+      .json({ error: "Student identifier is not provided." });
+  }
 
   const yearParam = parseInt(year.replace("year-", ""), 10);
   const branchParam = branch
@@ -82,24 +107,22 @@ export const getStudentDetails = async (req, res) => {
       if (err) {
         console.error("Error executing query:", err);
         return res.status(400).json({
-          error: "in database data is not found",
+          error: "Database error",
         });
       }
       if (result.length === 0) {
         return res.status(404).json({
-          error: `Student ${studentprofile} not found in year ${year}, branch ${branch}`,
+          error: `Student are not found`,
         });
       }
 
-      //   console.log(`Distinct branches for year, ${year}, : ${result}`);
-      // result.map((branch) => console.log(branch));
       return res.json({
         message: "Successfully fetch Student Profile",
         row: result,
       });
     });
   } catch (error) {
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -110,14 +133,12 @@ export const addStudent = (req, res) => {
 
   const { StudentName, Branch } = req.body;
   if (!StudentName || !Branch) {
-    return res
-      .status(400)
-      .json({ error: "StudentName and Branch are required." });
+    return res.status(400).json({ error: "Fields are required." });
   }
   const studentFilteredBody = Object.entries(req.body).reduce(
     (acc, [key, value]) => {
-      if (value !== null && value !== "") {
-        acc[key] = value;
+      if (value !== null && value !== "" && value !== " ") {
+        acc[key] = value.trim();
       }
       return acc;
     },
@@ -129,30 +150,22 @@ export const addStudent = (req, res) => {
 
     const studentValues = Object.values(studentFilteredBody);
 
-    const query = `INSERT INTO Student (${studentKeys}, StudentID, path, studentPath ) VALUES (${studentValues
+    const query = `INSERT INTO Student (${studentKeys}, path, studentPath ) VALUES (${studentValues
       .map(() => "?")
-      .join(", ")}, ?, ?, ? )`;
-
-    const studentID = `S${Math.floor(Math.random() * 10000)
-      .toString()
-      .padStart(3, "0")}`;
+      .join(", ")}, ?, ? )`;
 
     const path = Branch.toLowerCase().replace(/\s+/g, "-");
     const studentPath = StudentName.toLowerCase().replace(/\s+/g, "-");
 
-    db.query(
-      query,
-      [...studentValues, studentID, path, studentPath],
-      (err, result) => {
-        if (err) {
-          console.error("Error adding student:", err);
-          return res.status(500).json({ error: "Failed to add student" });
-        }
-        res.status(201).json({
-          message: "Student added successfully",
-        });
+    db.query(query, [...studentValues, path, studentPath], (err, result) => {
+      if (err) {
+        console.error("Error adding student:", err);
+        return res.status(500).json({ error: "Failed to add student" });
       }
-    );
+      res.status(201).json({
+        message: "Student added successfully.",
+      });
+    });
   } catch {
     console.error("Error adding student:", error);
     res.status(500).json({ error: "Failed to add student. Please try again." });
@@ -205,7 +218,6 @@ export const editStudent = async (req, res) => {
     if (req.body.Year) {
       newYear = `year-${req.body.Year}`;
     }
-
 
     if (Object.keys(studentFilteredBody).length > 0) {
       const updates = Object.keys(studentFilteredBody)

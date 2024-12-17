@@ -14,9 +14,13 @@ import Header from "../Common/Header";
 import Navbar from "../Common/Navbar";
 import { useSidebar } from "../../context/SidebarContext";
 import { Link, useParams } from "react-router-dom";
-import { IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowForward } from "../../utils/icons";
 import axios from "axios";
-import FourZeroFour from "../Common/404";
+import ErrorBox from "../Common/ErrorBox";
+import {
+  changeBranchFormatFnx,
+  changeYearFormatFnx,
+} from "../../utils/helpers";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -27,7 +31,7 @@ const StudentProfile = () => {
   const [performanceData, setPerformanceData] = useState({});
   const { year, branch, studentprofile } = useParams();
   const [studentProfileData, setStudentProfileData] = useState([]);
-  const [error, setError] = useState(null);
+  const [errorMessage, setErrorMessage] = useState([{ isActive: false }]);
 
   // Generate random attendance data for heatmap
   useEffect(() => {
@@ -53,6 +57,17 @@ const StudentProfile = () => {
     setPerformanceData(performance);
   }, []);
 
+  const handleChildError = (type, message) => {
+    setErrorMessage(() => [
+      {
+        id: Math.random(),
+        type: type,
+        message: message,
+        isActive: true,
+      },
+    ]);
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "personalInfo":
@@ -62,6 +77,7 @@ const StudentProfile = () => {
             year={year}
             branch={branch}
             studentprofile={studentprofile}
+            handleChildError={handleChildError}
           />
         );
       case "attendanceHistory":
@@ -83,37 +99,6 @@ const StudentProfile = () => {
         return null;
     }
   };
-  // const fetchStudentsByYear = async (year, branch, studentprofile, setStudentProfileData) => {
-  //   try {
-  //     const response = await axios.post(
-  //       `http://127.0.0.1:3001/api/student/${year}/${branch}/${studentprofile}`
-  //     );
-
-  //     // Log the entire response to debug
-  //     console.log("Full Response:", response);
-
-  //     if (response.data && response.data.row) {
-  //       setStudentProfileData(response.data.row); // Use the correct key from the response
-  //       console.log("Students Data:", response.data.row);
-  //     } else {
-  //       console.error("Unexpected response structure:", response.data);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching students by year:", error.response?.data || error.message);
-
-  //     // Handle specific HTTP status codes
-  //     if (error.response?.status === 404) {
-  //       console.error("404: Resource not found");
-  //       // Render a custom 404 component or take some action
-  //       setError(404);
-  //     } else {
-  //       console.error("An unexpected error occurred");
-  //     }
-  //   }
-  // };
-  // if(error === 404){
-  //   return <FourZeroFour />
-  // }
   const fetchStudentsByYear = async (
     year,
     branch,
@@ -122,37 +107,38 @@ const StudentProfile = () => {
   ) => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:3001/api/student/${year}/${branch}/${studentprofile}`
+        `${import.meta.env.VITE_API_BASE_URL}student/${year}/${branch}/${studentprofile}`
       );
       console.log("Students for Year:", response);
-      const data = response.data;
-      setStudentProfileData(data.row);
+      setStudentProfileData(response.data.row);
     } catch (error) {
-      // console.log(error.response?.status);
-      console.error(
-        "Error fetching students by year:",
-        error.response?.data || error.message
+      // console.error(
+      //   "Error fetching students by year:",
+      //   error.response?.data.error || error.message
+      // );
+      handleChildError(
+        "error",
+        error.response?.data.error ||
+          "Failed to fetch student profile. Please try again."
       );
-      // if (error.response?.status === 404) {
-      //   return <FourZeroFour />;
-      // }
+      // setErrorMessage(() => [
+      //   {
+      //     id: Math.random(),
+      //     type: "error",
+      //     message:
+      //       error.response?.data.error ||
+      //       "Failed to fetch student profile. Please try again.",
+      //     isActive: true,
+      //   },
+      // ]);
     }
   };
   useEffect(() => {
     fetchStudentsByYear(year, branch, studentprofile, setStudentProfileData);
   }, [year, branch, studentprofile]);
 
-  const changeBranchFormat = branch
-    .replace(/(^\w|\-\s*\w)/g, (match) => match.toUpperCase())
-    .replace("-", " ");
-
-  const changeYearFormat = year
-    .replace(/(^\w|\.\s*\w)/g, (match) => match.toUpperCase())
-    .replace("-", " ");
-
-  const changeStudentFormat = studentprofile
-    .replace(/(^\w|\-\s*\w)/g, (match) => match.toUpperCase())
-    .replace("-", " ");
+  const changeYearFormat = changeYearFormatFnx(year);
+  const changeBranchFormat = changeBranchFormatFnx(branch);
 
   return (
     <>
@@ -189,8 +175,18 @@ const StudentProfile = () => {
                 <IoIosArrowForward className="breadcrumb-icon " />
               </span>
               <span className="current-breadcrumb">Student Profile</span>
-              {/* <Link aria-disabled className="current-breadcrumb" to={`/year/${branch}`}>{currentBranch.name}</Link> */}
             </div>
+            {errorMessage[0].isActive &&
+              errorMessage.map((errorMessage) => (
+                <ErrorBox
+                  key={errorMessage.id}
+                  type={errorMessage.type}
+                  message={errorMessage.message}
+                  onClose={() => {
+                    setErrorMessage([{ isActive: false }]);
+                  }}
+                />
+              ))}
           </section>
           <div className="student-profile-container">
             {/* <h1 className="text-2xl text-gray-800 font-semibold mb-4">

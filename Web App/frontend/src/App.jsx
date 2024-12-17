@@ -12,11 +12,11 @@ import TeacherManagement from "./components/Teacher Management/TeacherManagement
 import Year from "./components/Student Management/Year";
 import BranchPage from "./components/Student Management/BranchPage";
 import { SidebarProvider } from "./context/SidebarContext";
-import './tailwind.css'; // Or the path to your CSS file
+import "./tailwind.css"; // Or the path to your CSS file
 import StudentProfile from "./components/Student Management/StudentProfile";
-import Timetable from "./components/Timetable";
+import TimetableManagement from "./components/Timetable Management/TimetableManagement";
 import TeacherProfile from "./components/Teacher Management/TeacherProfile";
-import ErrorPage from "./components/Common/404";
+// import Error from "./components/Common/ErrorBox";
 import AddTeacher from "./components/Teacher Management/AddTeacher";
 import AddStudent from "./components/Student Management/AddStudent";
 
@@ -34,24 +34,30 @@ function App() {
         {/* Protected Routes */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/enroll" element={<Enroll />} />
-        <Route path="/timetable" element={<Timetable />} />
-        <Route path="/404" element={<ErrorPage />} />
-        <Route path="/*" element={<ErrorPage />} />
+        <Route path="/timetable" element={<TimetableManagement />} />
+        {/* <Route path="/404" element={<Error />} />
+        <Route path="/*" element={<Error />} /> */}
 
-        
         {/* Teacher Management Routes */}
         <Route path="/teacher-management" element={<TeacherManagement />} />
-        <Route path="/teacher-management/:teacherprofile" element={<TeacherProfile />} />
-        <Route path="/teacher-management/add-teacher" element={<AddTeacher />} />
-
+        <Route
+          path="/teacher-management/:teacherprofile"
+          element={<TeacherProfile />}
+        />
+        <Route
+          path="/teacher-management/add-teacher"
+          element={<AddTeacher />}
+        />
 
         <Route path="/students" element={<Students />} />
         {/* Student Management Routes */}
         <Route path="/:year" element={<Year />} />
         <Route path="/:year/:branch" element={<BranchPage />} />
-        <Route path="/:year/:branch/:studentprofile" element={<StudentProfile />} />
+        <Route
+          path="/:year/:branch/:studentprofile"
+          element={<StudentProfile />}
+        />
         <Route path="/:year/:branch/add-student" element={<AddStudent />} />
-
       </Routes>
     </SidebarProvider>
   );

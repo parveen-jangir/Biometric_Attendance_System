@@ -136,6 +136,9 @@ export const getTeacherProfile = async (req, res) => {
 };
 
 export const addTeacher = async (req, res) => {
+  if (!req.body || Object.keys(req.body).length === 0) {
+    return res.status(400).json({ error: "All fields are required." });
+  }
   const {
     name,
     teacherID,
@@ -226,7 +229,7 @@ export const addTeacher = async (req, res) => {
 
     res
       .status(201)
-      .json({ message: "Teacher and subjects added successfully!" });
+      .json({ message: "Teacher added successfully!" });
   } catch (error) {
     console.error("Error in addTeacher:", error);
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-function AttendanceHistory() {
+const AttendanceHistory = () => {
   // Dummy data for subjects, attendance, and time
   const subjects = [
     { name: "Math", time: 15 }, // Total time per class in minutes
@@ -14,7 +14,7 @@ function AttendanceHistory() {
     const data = [];
     for (let i = 0; i < 31; i++) {
       // 80% chance of being present (1) and 20% absent (0)
-      data.push(Math.random() > 0.2 ? 1 : 0); 
+      data.push(Math.random() > 0.2 ? 1 : 0);
     }
     return data;
   };
@@ -27,15 +27,16 @@ function AttendanceHistory() {
   const [attendanceData, setAttendanceData] = useState(
     Array.from({ length: subjects.length }, () => generateRandomAttendance())
   );
-  
+
   const [attendanceTimeData, setAttendanceTimeData] = useState([]);
 
   useEffect(() => {
     // Update the attendanceTimeData after attendanceData is set
-    const newAttendanceTimeData = attendanceData.map((subjectAttendance, index) =>
-      subjectAttendance.map((attendance, dayIndex) =>
-        attendance === 1 ? generateRandomTime(subjects[index].time) : 0
-      )
+    const newAttendanceTimeData = attendanceData.map(
+      (subjectAttendance, index) =>
+        subjectAttendance.map((attendance, dayIndex) =>
+          attendance === 1 ? generateRandomTime(subjects[index].time) : 0
+        )
     );
     setAttendanceTimeData(newAttendanceTimeData);
   }, [attendanceData]); // This effect will run whenever attendanceData changes
@@ -69,9 +70,15 @@ function AttendanceHistory() {
                         ? "bg-blue-500 text-white hover:bg-blue-700"
                         : "bg-gray-200"
                     }`}
-                    title={subjectAttendance[i] === 1 ? `Present - ${attendanceTimeData[index]?.[i]} min` : "Absent"}
+                    title={
+                      subjectAttendance[i] === 1
+                        ? `Present - ${attendanceTimeData[index]?.[i]} min`
+                        : "Absent"
+                    }
                   >
-                    {subjectAttendance[i] === 1 ? `${attendanceTimeData[index]?.[i] || 0} min` : "A"}
+                    {subjectAttendance[i] === 1
+                      ? `${attendanceTimeData[index]?.[i] || 0} min`
+                      : "A"}
                   </td>
                 ))}
               </tr>
@@ -82,24 +89,32 @@ function AttendanceHistory() {
 
       {/* Show total time per subject */}
       <div className="subject-attendance mt-8">
-        <h4 className="text-lg font-semibold mb-4">Subject Attendance Details</h4>
+        <h4 className="text-lg font-semibold mb-4">
+          Subject Attendance Details
+        </h4>
         {subjects.map((subject, index) => {
-          const totalTime = attendanceTimeData[index]?.filter((time) => time > 0).reduce((a, b) => a + b, 0) || 0;
+          const totalTime =
+            attendanceTimeData[index]
+              ?.filter((time) => time > 0)
+              .reduce((a, b) => a + b, 0) || 0;
           const totalTimeToHour = parseInt(totalTime / 60);
           const totalTimeToMin = totalTime % 60;
           return (
             <div key={subject.name} className="subject-item mb-4">
               <p className="font-bold">{subject.name}</p>
               <p>
-                Attendance: {attendanceData[index].filter((x) => x === 1).length} days
+                Attendance:{" "}
+                {attendanceData[index].filter((x) => x === 1).length} days
               </p>
-              <p>Total Time: {`${totalTimeToHour} : ${totalTimeToMin}`} hours</p>
+              <p>
+                Total Time: {`${totalTimeToHour} : ${totalTimeToMin}`} hours
+              </p>
             </div>
           );
         })}
       </div>
     </div>
   );
-}
+};
 
 export default AttendanceHistory;

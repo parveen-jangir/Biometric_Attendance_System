@@ -1,43 +1,85 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../Common/Navbar";
 import Header from "../Common/Header";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  replace,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import { useSidebar } from "../../context/SidebarContext";
-import { IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowForward } from "../../utils/icons";
 import axios from "axios";
 import Loading from "../Common/Loading";
+import ErrorBox from "../Common/ErrorBox";
+import {
+  changeBranchFormatFnx,
+  changeYearFormatFnx,
+} from "../../utils/helpers";
 
-function BranchPage() {
+const BranchPage = () => {
   const { isSidebarVisible, toggleSidebar } = useSidebar();
-  const [studentData, setStudentData] = useState([]);
   const { year, branch } = useParams();
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const [studentData, setStudentData] = useState([]);
+  const [filters, setFilters] = useState({
+    searchQuery: "",
+  });
+  const [errorMessage, setErrorMessage] = useState([{ isActive: false }]);
+
+  const handleChildError = (type, message) => {
+    setErrorMessage(() => [
+      {
+        id: Math.random(),
+        type: type,
+        message: message,
+        isActive: true,
+      },
+    ]);
+  };
+
+  const updateFilter = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
 
   const fetchStudentsByYear = async (year, branch) => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:3001/api/student/${year}/${branch}`
+        `${import.meta.env.VITE_API_BASE_URL}student/${year}/${branch}`,
+        { params: filters }
       );
 
-      setStudentData(response.data.row);
+      if (response.data.row && response.data.row.length > 0) {
+        setStudentData(response.data.row);
+      } else {
+        setStudentData([]);
+      }
     } catch (error) {
-      console.error(
-        "Error fetching students by year:",
-        error.response?.data || error.message
+      setStudentData([]);
+
+      handleChildError(
+        "error",
+        error.response?.data.error || "Failed to fetch data. Please try again."
       );
     }
   };
 
   useEffect(() => {
     fetchStudentsByYear(year, branch);
-  }, [year, branch]);
+  }, [year, branch, filters]);
 
-  const changeBranchFormat = branch
-    .replace(/(^\w|\-\s*\w)/g, (match) => match.toUpperCase())
-    .replace("-", " ");
-  const changeYearFormat = year
-    .replace(/(^\w|\.\s*\w)/g, (match) => match.toUpperCase())
-    .replace("-", " ");
+  useEffect(() => {
+    if (state && state.error) {
+      handleChildError(state.error, state.message);
+      navigate("", { replace: true, state: null });
+    }
+  }, [state]);
+
+  const changeYearFormat = changeYearFormatFnx(year);
+  const changeBranchFormat = changeBranchFormatFnx(branch);
 
   return (
     <>
@@ -75,52 +117,21 @@ function BranchPage() {
                 <IoIosArrowForward className="breadcrumb-icon" />
               </span>
               <span className="current-breadcrumb">{changeBranchFormat}</span>
-              {/* <Link aria-disabled className="current-breadcrumb" to={`/year/${branch}`}>{changeBranchFormat.name}</Link> */}
             </div>
             <div className="flex justify-between gap-4 my-4">
               <input
                 type="text"
-                // value={filters.searchQuery}
-                // onChange={(e) => {
-                //   updateFilter("searchQuery", e.target.value);
-                // }}
+                name="searchQuery"
+                value={filters.searchQuery}
+                onChange={updateFilter}
                 placeholder="Search by name"
                 className="border border-gray-300 rounded-md px-4 py-2 w-full sm:w-1/3"
               />
-              {/* <select
-                // value={filters.selectedBranch}
-                // onChange={(e) => {
-                //   updateFilter("selectedBranch", e.target.value);
-                // }}
-                className="border border-gray-300 rounded-md px-4 py-2 w-full sm:w-1/3"
-              >
-                <option value="">Select Branch</option>
-                {distinctBranches.map((branch, idx) => (
-                  <option key={idx} value={branch.Department}>
-                    {branch.Department}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={filters.selectedSubject}
-                onChange={(e) => {
-                  updateFilter("selectedSubject", e.target.value);
-                }}
-                className="border border-gray-300 rounded-md px-4 py-2 w-full sm:w-1/3"
-              >
-                <option value="">Select Subject</option>
-                {distinctSubjects.map((subject, idx) => (
-                  <option key={idx} value={subject.SubjectName}>
-                    {subject.SubjectName}
-                  </option>
-                ))}
-              </select> */}
+
               <button
                 onClick={() => {
                   setFilters({
                     searchQuery: "",
-                    selectedBranch: "",
-                    selectedSubject: "",
                   });
                 }}
                 className="bg-red-500 text-white px-4 py-2 text-nowrap rounded-md hover:bg-red-600"
@@ -128,6 +139,17 @@ function BranchPage() {
                 Reset
               </button>
             </div>
+            {errorMessage[0].isActive &&
+              errorMessage.map((errorMessage) => (
+                <ErrorBox
+                  key={errorMessage.id}
+                  type={errorMessage.type}
+                  message={errorMessage.message}
+                  onClose={() => {
+                    setErrorMessage([{ isActive: false }]);
+                  }}
+                />
+              ))}
           </section>
 
           {studentData ? (
@@ -152,7 +174,7 @@ function BranchPage() {
                     </p>
                     <p className="text-gray-600">Branch: {student.Branch}</p>
                     <p className="text-gray-600">Batch: {student.Batch}</p>
-                    <div className="flex justify-between items-center mb-4">
+                    <div className="flex s-between items-center mb-4">
                       <p className="text-gray-600">
                         Year:{" "}
                         <span className="font-semibold">
@@ -265,6 +287,6 @@ function BranchPage() {
       </div>
     </>
   );
-}
+};
 
 export default BranchPage;

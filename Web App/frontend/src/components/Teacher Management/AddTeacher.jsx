@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowForward } from "../../utils/icons";
 import { useSidebar } from "../../context/SidebarContext";
 import Header from "../Common/Header";
 import Navbar from "../Common/Navbar";
+import ErrorBox from "../Common/ErrorBox";
 
 const AddTeacher = () => {
   const { isSidebarVisible, toggleSidebar } = useSidebar();
+  const [errorMessage, setErrorMessage] = useState([{ isActive: false }]);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -23,9 +26,6 @@ const AddTeacher = () => {
     address: "",
   });
 
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -35,15 +35,27 @@ const AddTeacher = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://127.0.0.1:3001/api/teacher/add-teacher",
+        `${import.meta.env.VITE_API_BASE_URL}teacher/add-teacher`,
         formData
       );
-      console.log(response.data);
-      alert("Teacher added successfully!");
-      navigate("/teacher-management");
-    } catch (err) {
-      console.error("Error adding teacher:", err.response?.data || err.message);
-      setError("Failed to add teacher. Please try again.");
+      console.log(response);
+      navigate("/teacher-management", {
+        state: {
+          error: "success",
+          message: response.data.message || "Teacher added successfully!",
+        },
+      });
+    } catch (error) {
+      setErrorMessage(() => [
+        {
+          id: Math.random(),
+          type: "error",
+          message:
+            error.response?.data.error ||
+            "Failed to add teacher. Please try again.",
+          isActive: true,
+        },
+      ]);
     }
   };
 
@@ -73,6 +85,17 @@ const AddTeacher = () => {
               </span>
               <span className="current-breadcrumb">Add Teacher</span>
             </div>
+            {errorMessage[0].isActive &&
+              errorMessage.map((errorMessage) => (
+                <ErrorBox
+                  key={errorMessage.id}
+                  type={errorMessage.type}
+                  message={errorMessage.message}
+                  onClose={() => {
+                    setErrorMessage([{ isActive: false }]);
+                  }}
+                />
+              ))}
           </section>
           <section className="explore-details">
             <div className="min-h-screen bg-gray-100 py-10">
@@ -81,8 +104,6 @@ const AddTeacher = () => {
                   onSubmit={handleSubmit}
                   className="bg-white shadow-lg rounded-lg p-6 max-w-2xl mx-auto"
                 >
-                  {error && <p className="text-red-500 mb-4">{error}</p>}
-
                   {/* Form Fields */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
