@@ -408,77 +408,31 @@ section.explore-details {
   margin-top: 15px;
 }
 
-/* 
-.table-body {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Error Animation */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.table-body table {
-  width: 50%;
-  border-radius: 5px;
-  border-collapse: separate;
+@keyframes progress-bar {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0;
+  }
 }
 
-.table-body table tr {
-  text-align: center;
-  border-bottom: 1.5px solid #111;
-  border-radius: 5px;
-  
-  overflow: hidden; 
-
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
 }
 
-table tr th {
-  font-size: 20px;
-  border-radius: 5px;
-  color: #fff;
-  background-color: #34495e;
-}
-
-table tr th h2 {
-  font-size: 20px;
-  padding: 10px 0;
-}
-
-table tr td {
-  border-radius: 5px;
-  background-color: #d5d8dc;
-
-  cursor: pointer;
-}
-
-table tr td a {
-  text-decoration: none;
-}
-
-table tr td h3 {
-  font-size: 17.5px;
-  font-weight: 400;
-  padding: 8px 0;
-}
-
-table tr:nth-child(odd) td {
-  background-color: #aab7b8;
-  border-bottom: 0.5px solid var(--secondary-color);
-}
-
-table tr:nth-child(even) td {
-  background-color: #d5d8dc;
-  border-bottom: 0.5px solid var(--secondary-color);
-}
-
-table tr:hover td {
-  background-color: #aab7b8;
-} */
-
-
-
-/* .page-cards .card{
-  
-} */
 
 /* Login Page */
 .app-main {

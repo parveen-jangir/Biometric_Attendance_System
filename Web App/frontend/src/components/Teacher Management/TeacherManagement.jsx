@@ -1,68 +1,125 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { IoIosArrowForward } from "react-icons/io";
-import Navbar from "../Navbar";
-import Header from "../Header";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { IoIosArrowForward } from "../../utils/icons";
+import Navbar from "../Common/Navbar";
+import Header from "../Common/Header";
 import { useSidebar } from "../../context/SidebarContext";
+import axios from "axios";
+import Loading from "../Common/Loading";
+import ErrorBox from "../Common/ErrorBox";
 
 function TeacherManagement() {
   const { isSidebarVisible, toggleSidebar } = useSidebar();
-  // Dummy data for teachers
-  const teachers = [
-    {
-      id: 1,
-      name: "John Doe",
-      subject: "Mathematics",
-      branch: "Computer Science",
-      yearsOfExperience: 5,
-      to: "/teacherprofile",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      subject: "Physics",
-      branch: "Mechanical Engineering",
-      yearsOfExperience: 3,
-      to: "/teacherprofile",
-    },
-    {
-      id: 3,
-      name: "David Harris",
-      subject: "Chemistry",
-      branch: "Chemical Engineering",
-      yearsOfExperience: 7,
-      to: "/teacherprofile",
-    },
-    {
-      id: 4,
-      name: "Rachel Green",
-      subject: "Biology",
-      branch: "Biotechnology",
-      yearsOfExperience: 4,
-      to: "/teacherprofile",
-    },
-  ];
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBranch, setSelectedBranch] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("");
-
-  const filteredTeachers = teachers.filter((teacher) => {
-    return (
-      (!searchQuery ||
-        teacher.name.toLowerCase().includes(searchQuery.toLowerCase())) &&
-      (!selectedBranch || teacher.branch === selectedBranch) &&
-      (!selectedSubject || teacher.subject.includes(selectedSubject))
-    );
+  const [errorMessage, setErrorMessage] = useState([{ isActive: false }]);
+  const navigate = useNavigate();
+  const { state } = useLocation();
+  const [teacherData, setTeacherData] = useState([]);
+  const [distinctBranches, setDistinctBranches] = useState([]);
+  const [distinctSubjects, setDistinctSubjects] = useState([]);
+  const [filters, setFilters] = useState({
+    searchQuery: "",
+    selectedBranch: "",
+    selectedSubject: "",
   });
 
-  // State to handle filters
-  // const [filter, setFilter] = useState("");
+  const handleChildError = (type, message) => {
+    setErrorMessage(() => [
+      {
+        id: Math.random(),
+        type: type,
+        message: message,
+        isActive: true,
+      },
+    ]);
+  };
 
-  // // Handle filter change
-  // const filteredTeachers = teachers.filter((teacher) =>
-  //   teacher.name.toLowerCase().includes(filter.toLowerCase())
-  // );
+  const fetchDistinctBranches = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}teacher/distinct-branches`
+      );
+      // console.log("Distint branches:", response);
+      const data = response.data;
+      setDistinctBranches(data.row);
+    } catch (error) {
+      // console.error(
+      //   "Error fetching distinct branches:",
+      //   error.response?.data || error.message
+      // );
+      handleChildError(
+        "error",
+        error.response?.data.error || "No records found"
+      );
+    }
+  };
 
+  const fetchDistinctSubjects = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}teacher/distinct-subjects`
+      );
+      // console.log("Distint subjects:", response);
+      const data = response.data;
+      setDistinctSubjects(data.row);
+    } catch (error) {
+      console.error(
+        "Error fetching distinct subjects:",
+        error.response?.data || error.message
+      );
+      handleChildError(
+        "error",
+        error.response?.data.error || "No records found"
+      );
+    }
+  };
+
+  const fetchTeachersFilter = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}teacher/get-teachers`,
+        {
+          params: filters,
+        }
+      );
+
+      if (response.data.row && response.data.row.length > 0) {
+        setTeacherData(response.data.row);
+      }
+    } catch (error) {
+      // console.error(
+      //   "Error fetching distinct subjects:",
+      //   error.response?.data.error || error.message
+      // );
+      setTeacherData([]);
+      handleChildError(
+        "error",
+        error.response?.data.error || "No records found"
+      );
+    }
+  };
+
+  const updateFilter = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  useEffect(() => {
+    fetchDistinctBranches();
+    fetchDistinctSubjects();
+  }, []);
+
+  useEffect(() => {
+    fetchTeachersFilter();
+  }, [filters]);
+
+  useEffect(() => {
+    if (state && state.error) {
+      handleChildError(state.error, state.message);
+      navigate("", { replace: true, state: null });
+    }
+  }, [state]);
   return (
     <>
       <Header toggleSidebar={toggleSidebar} />
@@ -75,18 +132,14 @@ function TeacherManagement() {
           <section className="page-header">
             <div className="header-title">
               <h1>Teacher Management</h1>
-              <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+              <button
+                onClick={() => {
+                  navigate("/teacher-management/add-teacher");
+                }}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              >
                 Add Teacher
               </button>
-              {/* <div className="flex gap-2 items-center">
-                <input
-                  type="text"
-                  // value={filter}
-                  // onChange={(e) => setFilter(e.target.value)}
-                  className="p-2 border rounded"
-                  placeholder="Search by name..."
-                />
-              </div> */}
             </div>
             {/* Breadcrumb */}
             <div className="breadcrumb">
@@ -96,84 +149,111 @@ function TeacherManagement() {
                 <IoIosArrowForward className="breadcrumb-icon " />
               </span>
               <span className="current-breadcrumb">Teacher Management</span>
-              {/* <Link aria-disabled className="current-breadcrumb" to={`/year/${branch}`}>{currentBranch.name}</Link> */}
             </div>
-            <div className="flex gap-4 my-4">
+            <div className="flex justify-between gap-4 my-4">
               <input
                 type="text"
+                name="searchQuery"
+                value={filters.searchQuery}
+                onChange={updateFilter}
                 placeholder="Search by name"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                // value={filter}
-                // onChange={(e) => setFilter(e.target.value)}
                 className="border border-gray-300 rounded-md px-4 py-2 w-full sm:w-1/3"
               />
               <select
-                value={selectedBranch}
-                onChange={(e) => setSelectedBranch(e.target.value)}
+                name="selectedBranch"
+                value={filters.selectedBranch}
+                onChange={updateFilter}
                 className="border border-gray-300 rounded-md px-4 py-2 w-full sm:w-1/3"
               >
                 <option value="">Select Branch</option>
-                <option value="Computer Science">Computer Science</option>
-                <option value="Mechanical Engineering">
-                  Mechanical Engineering
-                </option>
-                <option value="Chemical Engineering">
-                  Chemical Engineering
-                </option>
-                <option value="Biotechnology">Biotechnology</option>
+                {distinctBranches.map((branch, idx) => (
+                  <option key={idx} value={branch.Department}>
+                    {branch.Department}
+                  </option>
+                ))}
               </select>
               <select
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
+                name="selectedSubject"
+                value={filters.selectedSubject}
+                onChange={updateFilter}
                 className="border border-gray-300 rounded-md px-4 py-2 w-full sm:w-1/3"
               >
                 <option value="">Select Subject</option>
-                <option value="Mathematics">Mathematics</option>
-                <option value="Physics">Physics</option>
-                <option value="Programming">Programming</option>
+                {distinctSubjects.map((subject, idx) => (
+                  <option key={idx} value={subject.SubjectName}>
+                    {subject.SubjectName}
+                  </option>
+                ))}
               </select>
               <button
                 onClick={() => {
-                  setSearchQuery("");
-                  setSelectedBranch("");
-                  setSelectedSubject("");
+                  setFilters({
+                    searchQuery: "",
+                    selectedBranch: "",
+                    selectedSubject: "",
+                  });
                 }}
                 className="bg-red-500 text-white px-4 py-2 text-nowrap rounded-md hover:bg-red-600"
               >
                 Reset
               </button>
             </div>
-          </section>
-          <section className="explore-details">
-            <div className="explore-header">
-              <h2 className="explore-head-title">Teacher Details</h2>
-              <p className="explore-head-description">
-                Select your teacher to explore details.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTeachers.map((teacher) => (
-                <div
-                  key={teacher.id}
-                  className="bg-white shadow-md rounded-lg p-4 transition-transform transform hover:scale-105 hover:shadow-lg"
-                >
-                  <h3 className="text-xl font-bold mb-2">{teacher.name}</h3>
-                  <p className="text-gray-600">Subject: {teacher.subject}</p>
-                  <p className="text-gray-600">Branch: {teacher.branch}</p>
-                  <p className="text-gray-600">
-                    Experience: {teacher.yearsOfExperience} years
-                  </p>
-                  <Link
-                    to={teacher.to}
-                    className="mt-4 block bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 text-center"
-                  >
-                    View Profile
-                  </Link>
-                </div>
+            {errorMessage[0].isActive &&
+              errorMessage.map((errorMessage) => (
+                <ErrorBox
+                  key={errorMessage.id}
+                  type={errorMessage.type}
+                  message={errorMessage.message}
+                  onClose={() => {
+                    setErrorMessage([{ isActive: false }]);
+                  }}
+                />
               ))}
-            </div>
           </section>
+
+          {teacherData ? (
+            <section className="explore-details">
+              <div className="explore-header">
+                <h2 className="explore-head-title">Teacher Details</h2>
+                <p className="explore-head-description">
+                  Select your teacher to explore details.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {teacherData.map((teacher) => (
+                  <div
+                    key={teacher.TeacherID}
+                    className="bg-white flex justify-between flex-col shadow-md rounded-lg p-4 transition-transform transform hover:scale-105 hover:shadow-lg"
+                  >
+                    <div>
+                      <h3 className="text-xl font-bold mb-2">
+                        {teacher.TeacherName}
+                      </h3>
+                      <p className="text-gray-600">
+                        Subject: {teacher.Subjects.join(", ")}
+                      </p>
+                      <p className="text-gray-600">
+                        Branch: {teacher.Department}
+                      </p>
+                      <p className="text-gray-600">
+                        Experience: {teacher.Experience} years
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => navigate(teacher.Path)}
+                      // to={`/teacher-management/${teacher.Path}`}
+                      className="mt-4 bg-blue-500 text-white w-full py-2 px-4 rounded hover:bg-blue-600 "
+                    >
+                      View Profile
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : (
+            <Loading />
+          )}
         </main>
       </div>
     </>
@@ -181,126 +261,3 @@ function TeacherManagement() {
 }
 
 export default TeacherManagement;
-
-// import React, { useState } from "react";
-
-// const teachers = [
-//   {
-//     id: 1,
-//     name: "John Doe",
-//     branch: "CSE",
-//     subjects: ["Mathematics", "Physics"],
-//   },
-//   {
-//     id: 2,
-//     name: "Jane Smith",
-//     branch: "ECE",
-//     subjects: ["Electronics", "Signals"],
-//   },
-//   {
-//     id: 3,
-//     name: "Emily Johnson",
-//     branch: "IT",
-//     subjects: ["Programming", "Database"],
-//   },
-// ];
-
-// const TeacherManagement = () => {
-//   const [searchQuery, setSearchQuery] = useState("");
-//   const [selectedBranch, setSelectedBranch] = useState("");
-//   const [selectedSubject, setSelectedSubject] = useState("");
-
-//   const filteredTeachers = teachers.filter((teacher) => {
-//     return (
-//       (!searchQuery ||
-//         teacher.name.toLowerCase().includes(searchQuery.toLowerCase())) &&
-//       (!selectedBranch || teacher.branch === selectedBranch) &&
-//       (!selectedSubject || teacher.subjects.includes(selectedSubject))
-//     );
-//   });
-
-//   return (
-//     <div className="p-6 bg-gray-100 min-h-screen">
-//       {/* Header Section */}
-//       <div className="flex justify-between items-center bg-white shadow p-4 rounded-md">
-//         <h1 className="text-2xl font-bold text-gray-800">Teacher Management</h1>
-//         <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-//           Add Teacher
-//         </button>
-//       </div>
-
-//       {/* Filters */}
-//       <div className="flex gap-4 my-4">
-//         <input
-//           type="text"
-//           placeholder="Search by name"
-//           value={searchQuery}
-//           onChange={(e) => setSearchQuery(e.target.value)}
-//           className="border border-gray-300 rounded-md px-4 py-2 w-full sm:w-1/3"
-//         />
-//         <select
-//           value={selectedBranch}
-//           onChange={(e) => setSelectedBranch(e.target.value)}
-//           className="border border-gray-300 rounded-md px-4 py-2 w-full sm:w-1/3"
-//         >
-//           <option value="">Select Branch</option>
-//           <option value="CSE">CSE</option>
-//           <option value="ECE">ECE</option>
-//           <option value="IT">IT</option>
-//         </select>
-//         <select
-//           value={selectedSubject}
-//           onChange={(e) => setSelectedSubject(e.target.value)}
-//           className="border border-gray-300 rounded-md px-4 py-2 w-full sm:w-1/3"
-//         >
-//           <option value="">Select Subject</option>
-//           <option value="Mathematics">Mathematics</option>
-//           <option value="Physics">Physics</option>
-//           <option value="Programming">Programming</option>
-//         </select>
-//       </div>
-
-//       {/* Summary Cards */}
-//       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-4">
-//         <div className="bg-white shadow rounded-md p-4">
-//           <h2 className="text-gray-700 font-semibold">Total Teachers</h2>
-//           <p className="text-2xl font-bold text-gray-800">{teachers.length}</p>
-//         </div>
-//         <div className="bg-white shadow rounded-md p-4">
-//           <h2 className="text-gray-700 font-semibold">Branches</h2>
-//           <p className="text-gray-600">CSE, ECE, IT</p>
-//         </div>
-//         <div className="bg-white shadow rounded-md p-4">
-//           <h2 className="text-gray-700 font-semibold">Subjects</h2>
-//           <p className="text-gray-600">Mathematics, Physics, Programming...</p>
-//         </div>
-//       </div>
-
-//       {/* Teacher Cards */}
-//       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-//         {filteredTeachers.map((teacher) => (
-//           <div key={teacher.id} className="bg-white shadow rounded-md p-4">
-//             <h3 className="text-xl font-bold text-gray-800">{teacher.name}</h3>
-//             <p className="text-gray-600">Branch: {teacher.branch}</p>
-//             <p className="text-gray-600">
-//               Subjects: {teacher.subjects.join(", ")}
-//             </p>
-//             <div className="flex gap-2 mt-4">
-//               <button className="text-blue-500 hover:text-blue-700">
-//                 Edit
-//               </button>
-//               <button className="text-red-500 hover:text-red-700">
-//                 Delete
-//               </button>
-//               <button className="text-green-500 hover:text-green-700">
-//                 View Profile
-//               </button>
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default TeacherManagement;

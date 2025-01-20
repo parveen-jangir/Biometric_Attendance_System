@@ -100,11 +100,21 @@ const AttendanceHistory = () => {
               <table className="w-full border-collapse border border-gray-300">
                 <thead>
                   <tr>
-                  <th className="border border-gray-300 text-center bg-gray-200 p-3">Schedule Time</th>
-                  <th className="border border-gray-300 text-center bg-gray-200 p-3">Subject</th>
-                  <th className="border border-gray-300 text-center bg-gray-200 p-3">Batch</th>
-                    <th className="border border-gray-300 text-center bg-gray-200 p-3">Status</th>
-                    <th className="border border-gray-300 text-center bg-gray-200 p-3">Reason</th>
+                    <th className="border border-gray-300 text-center bg-gray-200 p-3">
+                      Schedule Time
+                    </th>
+                    <th className="border border-gray-300 text-center bg-gray-200 p-3">
+                      Subject
+                    </th>
+                    <th className="border border-gray-300 text-center bg-gray-200 p-3">
+                      Batch
+                    </th>
+                    <th className="border border-gray-300 text-center bg-gray-200 p-3">
+                      Status
+                    </th>
+                    <th className="border border-gray-300 text-center bg-gray-200 p-3">
+                      Reason
+                    </th>
                     <th className="border border-gray-300 text-center bg-gray-200 p-3">
                       Teaching Hours
                     </th>
@@ -118,14 +128,17 @@ const AttendanceHistory = () => {
                       </td>
                       <td className="border border-gray-300 text-center p-2">
                         {subject.subjectName}
-                      </td><td className="border border-gray-300 text-center p-2">
+                      </td>
+                      <td className="border border-gray-300 text-center p-2">
                         {subject.batch}
                       </td>
-                      <td className={`border border-gray-300 text-center p-2 ${
-                            subject.status === "Absent"
-                              ? "text-red-500 font-semibold"
-                              : ""
-                          }`}>
+                      <td
+                        className={`border border-gray-300 text-center p-2 ${
+                          subject.status === "Absent"
+                            ? "text-red-500 font-semibold"
+                            : ""
+                        }`}
+                      >
                         {subject.status}
                       </td>
                       <td className="border border-gray-300 text-center p-2">
@@ -135,21 +148,21 @@ const AttendanceHistory = () => {
                         {subject.teachingHours} mins
                       </td> */}
                       <td
-                          title={`${
-                            subject.status === "Present" ? "Present" : "Absent"
-                          }`}
-                          className={`border border-gray-300 text-center p-2 ${
-                            subject.status === "Absent"
-                              ? "text-red-500 font-semibold"
-                              : ""
-                          }`}
-                        >
-                          {`${
-                            subject.status === "Present"
-                              ? `${subject.teachingHours} mins`
-                              : "Absent"
-                          }`}
-                        </td>
+                        title={`${
+                          subject.status === "Present" ? "Present" : "Absent"
+                        }`}
+                        className={`border border-gray-300 text-center p-2 ${
+                          subject.status === "Absent"
+                            ? "text-red-500 font-semibold"
+                            : ""
+                        }`}
+                      >
+                        {`${
+                          subject.status === "Present"
+                            ? `${subject.teachingHours} mins`
+                            : "Absent"
+                        }`}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -192,48 +205,46 @@ const AttendanceHistory = () => {
             <tbody>
               {attendanceData.map((record) => (
                 <React.Fragment key={record.date}>
+                  <tr className="bg-gray-200">
+                    <td
+                      className="border border-gray-300 text-center p-3"
+                      colSpan={record.subjects.length}
+                    >
+                      {record.date}
+                    </td>
+                  </tr>
                   {record.subjects.map((subject, index) => (
-                    <>
-                      <tr>
-                        {index === 0 && (
-                          <td
-                            className="border border-gray-300 text-center p-3"
-                            colSpan={record.subjects.length}
-                          >
-                            {record.date}
-                          </td>
-                        )}
-                      </tr>
-                      <tr key={`${record.date}-${subject.subjectName}`}>
-                        {/* Show date only in the first row for each date */}
+                    <tr key={`${record.date}-${subject.subjectName}`}>
+                      {/* Show date only in the first row for each date */}
 
-                        <td className="border border-gray-300 text-center p-2">
-                          {subject.schduleTime}
-                        </td>
-                        <td className="border border-gray-300 text-center p-2">
-                          {subject.subjectName}
-                        </td>
-                        <td className="border border-gray-300 text-center p-2">
-                          {subject.batch}
-                        </td>
-                        <td
-                          title={`${
-                            subject.status === "Present" ? "Present" : `Reason: ${subject.reason}`
-                          }`}
-                          className={`border border-gray-300 text-center p-2 ${
-                            subject.status === "Absent"
-                              ? "text-red-500 font-semibold"
-                              : ""
-                          }`}
-                        >
-                          {`${
-                            subject.status === "Present"
-                              ? `${subject.teachingHours} mins`
-                              : "Absent"
-                          }`}
-                        </td>
-                      </tr>
-                    </>
+                      <td className="border border-gray-300 text-center p-2">
+                        {subject.schduleTime}
+                      </td>
+                      <td className="border border-gray-300 text-center p-2">
+                        {subject.subjectName}
+                      </td>
+                      <td className="border border-gray-300 text-center p-2">
+                        {subject.batch}
+                      </td>
+                      <td
+                        title={`${
+                          subject.status === "Present"
+                            ? "Present"
+                            : `Reason: ${subject.reason}`
+                        }`}
+                        className={`border border-gray-300 text-center p-2 ${
+                          subject.status === "Absent"
+                            ? "text-red-500 font-semibold"
+                            : ""
+                        }`}
+                      >
+                        {`${
+                          subject.status === "Present"
+                            ? `${subject.teachingHours} mins`
+                            : "Absent"
+                        }`}
+                      </td>
+                    </tr>
                   ))}
                 </React.Fragment>
               ))}
